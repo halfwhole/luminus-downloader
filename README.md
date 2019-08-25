@@ -1,0 +1,1 @@
+Run `node script.js`.

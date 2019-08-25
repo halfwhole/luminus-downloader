@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+*.un
+*.un~
+*.swp
+
+secret.txt
