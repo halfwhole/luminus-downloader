@@ -4,8 +4,12 @@ const puppeteer = require('puppeteer');
 const url = require('url');
 const fs = require('fs');
 
+const Module = require('./directory').Module;
+const Folder = require('./directory').Folder;
+const File = require('./directory').File;
+
 const SECRET_FILE = 'secret.txt';
-const NUM_MODULES = 5; // Change to 6 when we can deal with UQF2101I (nested folders and files)
+const NUM_MODULES = 5; // TODO: Change to 6 when we can deal with UQF2101I (nested folders and files)
 
 async function main() {
     // Read username and password
@@ -33,23 +37,20 @@ async function main() {
         const modulePage = await browser.newPage();
         await moveToLumiNUS(modulePage);
         await moveToModules(modulePage);
-        const module = await getModule(modulePage, modulePos);
-        const moduleCode = module['moduleCode'];
-        const moduleName = module['moduleName'];
+        const moduleInfo = await getModuleInfo(modulePage, modulePos);
+        const moduleCode = moduleInfo['moduleCode'];
+        const moduleName = moduleInfo['moduleName'];
 
         console.log('Exploring ' + moduleCode + ' ...');
         await moveToModule(modulePage, modulePos);
         await moveToFiles(modulePage);
 
         const folders = await exploreFolders(modulePage, true);
-        const moduleDirectory = {
-            'moduleCode': moduleCode,
-            'moduleName': moduleName,
-            'folders': folders
-        }
+        const module = new Module(moduleCode, moduleName, folders);
+
         await modulePage.close();
         console.log('Done with ' + moduleCode);
-        directory.push(moduleDirectory);
+        directory.push(module);
     }
     printDirectory(directory);
 
@@ -101,7 +102,7 @@ async function moveToModule(page, pos, print = false) {
 }
 
 /*
-async function getModules(page, print = false) {
+async function getModulesInfo(page, print = false) {
     await page.waitForSelector('.module-card');
     const moduleCards = await page.$$('.module-card');
     let modules = [];
@@ -115,7 +116,7 @@ async function getModules(page, print = false) {
 }
 */
 
-async function getModule(page, modulePos, print = false) {
+async function getModuleInfo(page, modulePos, print = false) {
     await page.waitForSelector('.module-card');
     const moduleCard = (await page.$$('.module-card'))[modulePos];
     const moduleCode = await moduleCard.$eval('.module-code', elem => elem.innerText);
@@ -141,6 +142,8 @@ async function moveToFiles(page, print = false) {
 
 async function exploreFolders(page, print = false) {
     // We find folders by finding list-view-item, then .filename and folder-status within
+    // TODO: Find sub-folders
+    // TODO: Handle open folders only
     if (print) console.log('Exploring folders ...');
     await page.waitForSelector('list-view-item');
 
@@ -157,11 +160,9 @@ async function exploreFolders(page, print = false) {
         const folderStatusElem = await item.$('folder-status');
         const folderStatus = await folderStatusElem.$eval('span', elem => elem.innerText);
         const files = await exploreFiles(page, i, print);
-        folders.push({
-            'folderName': folderName,
-            'folderStatus': folderStatus,
-            'files': files
-        });
+        const subFolders = [];
+        const folder = new Folder(folderName, folderStatus, files, subFolders);
+        folders.push(folder);
     }
     return folders;
 }
@@ -182,54 +183,27 @@ async function exploreFiles(page, folderPos, print = false) {
     let files = [];
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const fileName = await item.$eval('.filename', elem => elem.innerText);
+        const name = await item.$eval('.filename', elem => elem.innerText);
         const lastModifiedBy = await item.$eval('div.user', elem => elem.innerText);
-        files.push({ 'fileName': fileName, 'lastModifiedBy': lastModifiedBy });
+        const file = new File(name, lastModifiedBy);
+        files.push(file);
     }
     await page.goBack();
     await page.waitForNavigation();
     return files;
 }
 
-/*
-Layout:
-{
-    moduleCode: ___,
-    moduleName: ___,
-    folders: {
-        folderName: ___,
-        folderStatus: ___,
-        files: {
-            fileName: ___,
-            lastModifiedBy: ___
-        }
-    }
-}
-*/
 function printDirectory(directory) {
-    let first = true;
     for (const module of directory) {
-        if (!first) console.log();
-        first = false;
-        const moduleCode = module['moduleCode'];
-        const moduleName = module['moduleName'];
-        const folders = module['folders'];
-        console.log(moduleCode + ': ' + moduleName);
-        for (const folder of folders) {
-            const folderName = folder['folderName'];
-            const folderStatus = folder['folderStatus'];
-            const files = folder['files'];
-            console.log('* ' + folderName + ' (' + folderStatus + ')');
-            for (const file of files) {
-                const fileName = file['fileName'];
-                const lastModifiedBy = file['lastModifiedBy'];
-                console.log('  * ' + fileName + ' (last modified by ' + lastModifiedBy + ')');
-            }
-        }
+        console.log();
+        module.print();
     }
 }
 
-main().then(() => {
-    process.exit(0);
+main()
+.then(() => process.exit(0))
+.catch(e => {
+    console.log(e);
+    process.exit(1);
 });
 
