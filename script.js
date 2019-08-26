@@ -23,12 +23,13 @@ async function main() {
     await moveToLumiNUS(page, PRINT);
     await login(page, username, password, PRINT);
 
-    let modules = [];
-
+    let modulePromises = [];
     for (let modulePos = 0; modulePos < NUM_MODULES; modulePos++) {
-        const module = await getModule(browser, modulePos);
-        modules.push(module);
+        const modulePromise = getModule(browser, modulePos);
+        modulePromises.push(modulePromise);
     }
+
+    const modules = await Promise.all(modulePromises);
 
     for (const module of modules) {
         console.log();
