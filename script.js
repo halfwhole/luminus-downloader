@@ -21,7 +21,7 @@ async function main() {
     const page = await browser.newPage();
 
     await moveToLumiNUS(page, PRINT);
-    await login(page, username, password, PRINT);
+    await login(page, username, password);
 
     let modulePromises = [];
     for (let modulePos = 0; modulePos < NUM_MODULES; modulePos++) {
@@ -41,7 +41,7 @@ async function main() {
 
 // Sets up and closes a new page for getting a module.
 // Pre-condition: the user must already be logged in
-// Returns: a Module
+// Returns: a Module;
 async function getModule(browser, modulePos) {
     const modulePage = await browser.newPage();
     await moveToLumiNUS(modulePage);
@@ -53,7 +53,7 @@ async function getModule(browser, modulePos) {
     await moveToModule(modulePage, modulePos);
     await moveToFiles(modulePage);
 
-    const module = await exploreModule(modulePage, moduleCode, moduleName, PRINT);
+    const module = await exploreModule(modulePage, moduleCode, moduleName);
     await modulePage.close();
     return module;
 }
@@ -70,17 +70,17 @@ function readUsernamePassword() {
 }
 
 async function moveToLumiNUS(page, print = false) {
-    if (print) console.log('Retrieving LumiNUS home page ...');
+    if (print) process.stdout.write('Accessing LumiNUS ... ');
     await page.goto('https://luminus.nus.edu.sg/');
+    if (print) console.log('done!');
 }
 
 // Pre-condition: the page is at the LumiNUS login page
 // Logs the user in using 'username' and 'password', throwing an error if login fails
-async function login(page, username, password, print = false) {
+async function login(page, username, password) {
     await page.waitForSelector('.homepage');
     await page.click('.btn-login');
 
-    if (print) console.log('Retrieving NUS login page ...');
     await page.waitForSelector('#loginForm');
     const userNameInput = await page.$('#userNameInput');
     const passwordInput = await page.$('#passwordInput')
@@ -88,27 +88,29 @@ async function login(page, username, password, print = false) {
     await passwordInput.type(password);
     await passwordInput.press('Enter');
 
-    if (print) console.log('Logging in ...');
+    if (PRINT) process.stdout.write('Logging in ... ');
     const response = await page.waitForNavigation();
     const success = url.parse(page.url()).host === 'luminus.nus.edu.sg';
     if (!success) {
         throw 'Login invalid. Please check your login credentials again.';
     }
-    if (print) console.log('Successfully logged into LumiNUS!\n');
+    if (PRINT) {
+        console.log('done!');
+        console.log('Please wait as LumiNUS loads ...');
+        console.log();
+    }
 }
 
 // Pre-condition: the page is at the dashboard
-async function moveToModules(page, print = false) {
+async function moveToModules(page) {
     await page.waitForSelector('.my-modules');
-    if (print) console.log('Moving to your modules ...');
     await page.evaluate(() => document.querySelector('.my-modules').click());
     await page.waitForNavigation();
 }
 
 // Pre-condition: the page is at 'My Modules'
 // Moves to the module with position 'pos'
-async function moveToModule(page, pos, print = false) {
-    if (print) console.log('Moving to module ... ');
+async function moveToModule(page, pos) {
     await page.waitForSelector('.module-card');
     await page.evaluate(pos => document.querySelectorAll('.module-card')[pos].click(), pos);
     await page.waitForNavigation();
@@ -157,20 +159,20 @@ async function moveToFiles(page, print = false) {
 
 // Pre-condition: the page is at the main folder page of a 'Files' tab
 // Returns: a Module
-async function exploreModule(page, moduleCode, moduleName, print = false) {
-    const foldersFiles = await exploreFolderPage(page, moduleCode, print);
+async function exploreModule(page, moduleCode, moduleName) {
+    const foldersFiles = await exploreFolderPage(page, moduleCode);
     const folders = foldersFiles['folders'];
     const files = foldersFiles['files'];
     const module = new Module(moduleCode, moduleName, folders);
-    if (print) console.log('Done with ' + moduleCode);
+    if (PRINT) console.log('Done with ' + moduleCode);
     return module;
 }
 
 
 // Pre-condition: the page is at the sub-folder you wish to explore
 // Returns: a Folder
-async function exploreFolder(page, folderName, folderStatus, print = false) {
-    const foldersFiles = await exploreFolderPage(page, folderName, print);
+async function exploreFolder(page, folderName, folderStatus) {
+    const foldersFiles = await exploreFolderPage(page, folderName);
     const folders = foldersFiles['folders'];
     const files = foldersFiles['files'];
     const folder = new Folder(folderName, folderStatus, files, folders);
@@ -179,15 +181,15 @@ async function exploreFolder(page, folderName, folderStatus, print = false) {
 
 // Pre-condition: the page is at the folder you wish to explore
 // Returns: an object with array of folders, and an array of files
-async function exploreFolderPage(page, descriptor, print = false) {
-    if (print) console.log('Exploring ' + descriptor + ' ... ');
-    const folders = await getFolders(page, print);
-    const files = await getFiles(page, print);
+async function exploreFolderPage(page, descriptor) {
+    if (PRINT) console.log('Exploring ' + descriptor + ' ...');
+    const folders = await getFolders(page);
+    const files = await getFiles(page);
     return { 'folders': folders, 'files': files };
 }
 
 // Returns: an array of folders
-async function getFolders(page, print = false) {
+async function getFolders(page) {
     let folders = [];
     // TODO: Handle open folders only
     await page.waitForSelector('list-view-item');
@@ -218,7 +220,7 @@ async function getFolders(page, print = false) {
         }, itemPos);
         await page.waitForNavigation();
 
-        const folder = await exploreFolder(page, folderName, folderStatus, print);
+        const folder = await exploreFolder(page, folderName, folderStatus);
         folders.push(folder);
 
         // Exit the folder
@@ -230,7 +232,7 @@ async function getFolders(page, print = false) {
 }
 
 // Returns: an array of files
-async function getFiles(page, print = false) {
+async function getFiles(page) {
     let files = [];
 
     const fileGroup = await page.$('div.files');
