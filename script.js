@@ -1,16 +1,68 @@
 'use strict';
 
 const puppeteer = require('puppeteer');
+const path = require('path');
 const url = require('url');
 const fs = require('fs');
+const os = require('os');
 
-const Module = require('./directory').Module;
-const Folder = require('./directory').Folder;
-const File = require('./directory').File;
+const { Module, Folder, File } = require('./directory');
 
-const SECRET_FILE = 'secret.txt';
+const SECRET_FILE_PATH = 'secret.txt';
+const DIRECTORY_PATH = 'Documents/AY2S1/';
 const NUM_MODULES = 6;
 const PRINT = true;
+
+// Returns: an array of Folders, and an array of Files
+function exploreLocalFoldersFiles(folderPath) {
+    const dirents = fs.readdirSync(folderPath, { withFileTypes: true })
+    const folderNames = dirents
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+    const fileNames = dirents
+        .filter(dirent => !dirent.isDirectory())
+        .map(dirent => dirent.name);
+
+    const folders = folderNames.map(folderName => {
+        return exploreLocalFolder(folderPath, folderName);
+    });
+    const files = fileNames.map(fileName => {
+        return new File(fileName);
+    });
+
+    return { 'folders': folders, 'files': files };
+}
+
+// Returns: a Folder
+function exploreLocalFolder(folderPath, folderName) {
+    const newPath = path.join(folderPath, folderName);
+    const localFoldersFiles = exploreLocalFoldersFiles(newPath);
+    const folders = localFoldersFiles['folders'];
+    const files = localFoldersFiles['files'];
+    return new Folder(folderName, '', files, folders);
+}
+
+// Returns: a Module
+function exploreLocalModule(folderPath, moduleCode) {
+    const newPath = path.join(folderPath, moduleCode);
+    const localFoldersFiles = exploreLocalFoldersFiles(newPath);
+    const folders = localFoldersFiles['folders'];
+    return new Module(moduleCode, '', folders);
+}
+
+function exploreLocalModules(folderPath) {
+    const dirents = fs.readdirSync(folderPath, { withFileTypes: true })
+    const moduleCodes = dirents
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+    const modules = moduleCodes.map(moduleCode => {
+        return exploreLocalModule(folderPath, moduleCode);
+    });
+    return modules;
+}
+
+const absolutePath = path.join(os.homedir(), DIRECTORY_PATH);
+const localModules = exploreLocalModules(absolutePath);
 
 async function main() {
     const usernamePassword = readUsernamePassword();
@@ -60,7 +112,7 @@ async function getModule(browser, modulePos) {
 
 function readUsernamePassword() {
     try {
-        const data = fs.readFileSync(SECRET_FILE, 'utf8').toString();
+        const data = fs.readFileSync(SECRET_FILE_PATH, 'utf8').toString();
         const username = data.split('\n')[0];
         const password = data.split('\n')[1];
         return { 'username': username, 'password': password };
