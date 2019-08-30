@@ -13,6 +13,10 @@ const DIRECTORY_PATH = 'Documents/AY2S1/';
 const NUM_MODULES = 6;
 const PRINT = true;
 
+
+/* EXPLORE LOCAL DIRECTORY */
+
+
 // Returns: an array of Folders, and an array of Files
 function exploreLocalFoldersFiles(folderPath) {
     const dirents = fs.readdirSync(folderPath, { withFileTypes: true })
@@ -61,8 +65,64 @@ function exploreLocalModules(folderPath) {
     return modules;
 }
 
-const absolutePath = path.join(os.homedir(), DIRECTORY_PATH);
-const localModules = exploreLocalModules(absolutePath);
+
+/* COMPARE TWO DIRECTORIES */
+
+
+// Testing
+/*
+const testPath1 = 'Documents/TEST1/';
+const testPath2 = 'Documents/TEST2/';
+const localModules1 = exploreLocalModules(path.join(os.homedir(), testPath1));
+const localModules2 = exploreLocalModules(path.join(os.homedir(), testPath2));
+// TODO: For each module in modules, find the corresponding one and compare starting from there
+const localModule1 = localModules1[0];
+const localModule2 = localModules2[0];
+compareTwoFoldersOrModules(localModule1, localModule2);
+localModule1.print();
+*/
+
+// Compares files and folders that are in folder1 but not in folder2, marking new ones as `diff`
+function compareTwoFoldersOrModules(folder1, folder2) {
+    // Mark diff files
+    const folder1files = folder1.files || [];
+    const folder2files = folder2.files || [];
+    const diffFiles = folder1files.filter(folder1file => {
+        return !folder2files.map(f => f.name).some(fName => fName === folder1file.name);
+    });
+    diffFiles.forEach(file => file.diff = true);
+
+    // Mark diff folders -- also recursively mark each item in it as diff
+    const folder1folders = folder1.folders || [];
+    const folder2folders = folder2.folders || [];
+    const diffFolders = folder1folders.filter(folder1folder => {
+        return !folder2folders.map(f => f.name).some(fName => fName === folder1folder.name);
+    });
+    diffFolders.forEach(folder => markDiffFolders(folder));
+
+    // Explore non-diff folders
+    const nonDiffFolders = folder1folders.filter(folder1folder => {
+        return folder2folders.map(f => f.name).some(fName => fName === folder1folder.name);
+    });
+
+    nonDiffFolders.forEach(folder1subfolder => {
+        const folder2subfolder = folder2folders.filter(folder2folder => {
+            return folder2folder.name === folder1subfolder.name;
+        })[0];
+        compareTwoFoldersOrModules(folder1subfolder, folder2subfolder);
+    });
+}
+
+// Recursively marks the `diff` property of all sub-folders and files in the folder to be true
+function markDiffFolders(folder) {
+    folder.diff = true;
+    folder.files.forEach(file => file.diff = true);
+    folder.subFolders.forEach(subFolder => markDiffFolders(subFolder));
+}
+
+
+/* MAIN FUNCTION */
+
 
 async function main() {
     const usernamePassword = readUsernamePassword();
@@ -90,6 +150,10 @@ async function main() {
 
     await browser.close();
 }
+
+
+/* MOVING AND SETTING UP LUMINUS */
+
 
 // Sets up and closes a new page for getting a module.
 // Pre-condition: the user must already be logged in
@@ -207,7 +271,9 @@ async function moveToFiles(page, print = false) {
     await page.waitForNavigation();
 }
 
-/* Exploring folder and file structure */
+
+/* EXPLORE LUMINUS DIRECTORY */
+
 
 // Pre-condition: the page is at the main folder page of a 'Files' tab
 // Returns: a Module
@@ -241,6 +307,7 @@ async function exploreFolderPage(page, descriptor) {
 }
 
 // Returns: an array of folders
+// NOTE: filters out folders that aren't open, or are submission folders
 async function getFolders(page) {
     let folders = [];
     // TODO: Handle open folders only
@@ -304,6 +371,10 @@ async function getFiles(page) {
 
     return files;
 }
+
+
+/* MAIN PROCESS */
+
 
 main()
 .then(() => process.exit(0))
