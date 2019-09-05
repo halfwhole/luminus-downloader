@@ -10,8 +10,9 @@ const { Module, Folder, File } = require('./directory');
 
 const SECRET_FILE_PATH = 'secret.txt';
 const DIRECTORY_PATH = 'Documents/AY2S1/';
-const NUM_MODULES = 6;
+const NUM_MODULES = 7;
 const PRINT = true;
+// TODO: Allow custom module mappings for names
 
 
 /* EXPLORE LOCAL DIRECTORY */
@@ -69,18 +70,18 @@ function exploreLocalModules(folderPath) {
 /* COMPARE TWO DIRECTORIES */
 
 
-// Testing
-/*
-const testPath1 = 'Documents/TEST1/';
-const testPath2 = 'Documents/TEST2/';
-const localModules1 = exploreLocalModules(path.join(os.homedir(), testPath1));
-const localModules2 = exploreLocalModules(path.join(os.homedir(), testPath2));
-// TODO: For each module in modules, find the corresponding one and compare starting from there
-const localModule1 = localModules1[0];
-const localModule2 = localModules2[0];
-compareTwoFoldersOrModules(localModule1, localModule2);
-localModule1.print();
-*/
+// Compares a list of modules with another list of matching modules.
+// Entry point of comparison
+function compareModules(moduleList1, moduleList2) {
+    for (const module1 of moduleList1) {
+        const module2 = moduleList2.filter(module2 => module2.code === module1.code)[0];
+        if (module2 === undefined) {
+            console.log('Could not find matching module for ' + module1.code);
+        } else {
+            compareTwoFoldersOrModules(module1, module2);
+        }
+    }
+}
 
 // Compares files and folders that are in folder1 but not in folder2, marking new ones as `diff`
 function compareTwoFoldersOrModules(folder1, folder2) {
@@ -113,11 +114,11 @@ function compareTwoFoldersOrModules(folder1, folder2) {
     });
 }
 
-// Recursively marks the `diff` property of all sub-folders and files in the folder to be true
+// Recursively marks the `diff` property of all its folders and files to be true
 function markDiffFolders(folder) {
     folder.diff = true;
     folder.files.forEach(file => file.diff = true);
-    folder.subFolders.forEach(subFolder => markDiffFolders(subFolder));
+    folder.folders.forEach(folder => markDiffFolders(folder));
 }
 
 
@@ -135,17 +136,21 @@ async function main() {
     await moveToLumiNUS(page, PRINT);
     await login(page, username, password);
 
-    let modulePromises = [];
+    let modules = [];
+    // We don't use async here, because LumiNUS can't handle the load :/
     for (let modulePos = 0; modulePos < NUM_MODULES; modulePos++) {
-        const modulePromise = getModule(browser, modulePos);
-        modulePromises.push(modulePromise);
+        const module = await getModule(browser, modulePos);
+        modules.push(module);
     }
 
-    const modules = await Promise.all(modulePromises);
+    console.log();
+
+    const localModules = exploreLocalModules(path.join(os.homedir(), DIRECTORY_PATH));
+    compareModules(modules, localModules);
 
     for (const module of modules) {
         console.log();
-        module.print();
+        module.print(true);
     }
 
     await browser.close();
@@ -157,7 +162,7 @@ async function main() {
 
 // Sets up and closes a new page for getting a module.
 // Pre-condition: the user must already be logged in
-// Returns: a Module;
+// Returns: a Module
 async function getModule(browser, modulePos) {
     const modulePage = await browser.newPage();
     await moveToLumiNUS(modulePage);
@@ -232,21 +237,6 @@ async function moveToModule(page, pos) {
     await page.waitForNavigation();
 }
 
-/*
-async function getModulesInfo(page, print = false) {
-    await page.waitForSelector('.module-card');
-    const moduleCards = await page.$$('.module-card');
-    let modules = [];
-    for (const moduleCard of moduleCards) {
-        const moduleCode = await moduleCard.$eval('.module-code', elem => elem.innerText);
-        const moduleName = await moduleCard.$eval('h4', elem => elem.innerText);
-        modules.push({ 'moduleCode': moduleCode, 'moduleName': moduleName });
-    }
-    if (print) console.log(modules.length + ' modules found');
-    return modules;
-}
-*/
-
 // Pre-condition: the page is at 'My Modules'
 async function getModuleInfo(page, modulePos, print = false) {
     await page.waitForSelector('.module-card');
@@ -278,10 +268,22 @@ async function moveToFiles(page, print = false) {
 // Pre-condition: the page is at the main folder page of a 'Files' tab
 // Returns: a Module
 async function exploreModule(page, moduleCode, moduleName) {
+    if (PRINT) console.log('Exploring ' + moduleCode + ' ...');
+
+    // If a module has no files/folders, return an empty module
+    const content = await page.waitForSelector('#content');
+    if (await page.$('p.empty') !== null &&
+        await page.$eval('p.empty', elem => elem.innerText) === 'No folders.') {
+        if (PRINT) console.log('Done with ' + moduleCode + ', no folders found');
+        return new Module(moduleCode, moduleName, []);
+    }
+
+    // If a module has files/folders, explore it further
     const foldersFiles = await exploreFolderPage(page, moduleCode);
     const folders = foldersFiles['folders'];
     const files = foldersFiles['files'];
     const module = new Module(moduleCode, moduleName, folders);
+
     if (PRINT) console.log('Done with ' + moduleCode);
     return module;
 }
@@ -300,7 +302,6 @@ async function exploreFolder(page, folderName, folderStatus) {
 // Pre-condition: the page is at the folder you wish to explore
 // Returns: an object with array of folders, and an array of files
 async function exploreFolderPage(page, descriptor) {
-    if (PRINT) console.log('Exploring ' + descriptor + ' ...');
     const folders = await getFolders(page);
     const files = await getFiles(page);
     return { 'folders': folders, 'files': files };
