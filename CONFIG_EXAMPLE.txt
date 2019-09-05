@@ -1,0 +1,5 @@
+username = nusstu\e0123456X
+password = <password>
+directory_path = Documents/AY2S1/
+num_modules = 5
+print = true

@@ -9,10 +9,11 @@ const { login } = require('./login');
 const { exploreModule } = require('./exploreLuminusDirectory');
 const { exploreLocalModules } = require('./exploreLocalDirectory');
 const { compareModules } = require('./compareDirectories');
+const { readDirectoryPath, readNumModules, readPrint } = require('./configParser');
 
-const DIRECTORY_PATH = 'Documents/AY2S1/';
-const NUM_MODULES = 7;
-const PRINT = true;
+const DIRECTORY_PATH = readDirectoryPath();
+const NUM_MODULES = readNumModules();
+const PRINT = readPrint();
 // TODO: Allow custom module mappings for names
 
 

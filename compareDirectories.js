@@ -1,4 +1,6 @@
-const PRINT = true; // TODO: not good to redefine, put in a separate config
+const { readPrint } = require('./configParser');
+
+const PRINT = readPrint();
 
 // Entry point for comparing two lists of modules
 // Compares a list of modules with another list of matching modules

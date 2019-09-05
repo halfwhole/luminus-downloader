@@ -1,6 +1,7 @@
 const { Module, Folder, File } = require('./directory');
+const { readPrint } = require('./configParser');
 
-const PRINT = true; // TODO: not good to redefine, put in a separate config
+const PRINT = readPrint();
 
 // Pre-condition: the page is at the main folder page of a 'Files' tab
 // Returns: a Module

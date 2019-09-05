@@ -1,26 +1,15 @@
 const fs = require('fs');
 const url = require('url');
 
-const PRINT = true; // TODO: not good to redefine, put in a separate config
-const SECRET_FILE_PATH = 'secret.txt';
+const { readUsername, readPassword, readPrint } = require('./configParser');
+
+const PRINT = readPrint();
 
 // Pre-condition: the page is at the LumiNUS login page
-// Logs the user by retrieving the username and password, throwing an error if login fails
+// Logs in the user, throwing an error if the login fails
 async function login(page) {
-    function readUsernamePassword() {
-        try {
-            const data = fs.readFileSync(SECRET_FILE_PATH, 'utf8').toString();
-            const username = data.split('\n')[0];
-            const password = data.split('\n')[1];
-            return { 'username': username, 'password': password };
-        } catch (e) {
-            throw 'Could not read username and password from secret.txt, terminating.';
-        }
-    }
-
-    const usernamePassword = readUsernamePassword();
-    const username = usernamePassword['username'];
-    const password = usernamePassword['password'];
+    const username = readUsername()
+    const password = readPassword();
 
     await page.waitForSelector('.homepage');
     await page.click('.btn-login');
