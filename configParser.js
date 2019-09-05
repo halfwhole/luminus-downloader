@@ -25,7 +25,7 @@ function readPassword() {
 }
 
 function readPrint() {
-    return read('print');
+    return read('print') === 'true';
 }
 
 function readDirectoryPath() {
@@ -33,7 +33,7 @@ function readDirectoryPath() {
 }
 
 function readNumModules() {
-    return read('num_modules');
+    return parseInt(read('num_modules'));
 }
 
 module.exports = { readUsername, readPassword, readPrint, readDirectoryPath, readNumModules };

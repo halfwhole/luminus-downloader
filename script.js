@@ -102,13 +102,17 @@ async function main() {
         modules.push(module);
     }
 
-    console.log();
+    if (PRINT) console.log();
 
     const localModules = exploreLocalModules(path.join(os.homedir(), DIRECTORY_PATH));
     compareModules(modules, localModules);
 
+    if (PRINT) console.log();
+
+    let first = true;
     for (const module of modules) {
-        console.log();
+        if (!first) console.log();
+        first = false;
         module.print(true);
     }
 
