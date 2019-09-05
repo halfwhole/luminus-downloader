@@ -9,7 +9,7 @@ Replace the following fields accordingly:
 * `num_modules` Number of modules you're taking (this helps to speed things up because LumiNUS can be rather slow)
 * `print` Whether you want to display extra information or not -- either `true` or `false`
 
-Run `npm install`, then run the main script using `node script.js`.
+Run `npm install`, then run the main script using `node main.js`.
 
 ### Sample output
 
