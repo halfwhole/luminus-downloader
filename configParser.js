@@ -11,7 +11,7 @@ function read(property) {
         const value = splitLine.join('=').trim();
         return value;
     } catch (e) {
-        throw 'Could not read ' + property + ' from CONFIG.txt, terminating.';
+        throw 'Could not read ' + property + ' from ' + CONFIG_FILE + ', terminating.';
     }
 }
 

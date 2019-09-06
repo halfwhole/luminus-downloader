@@ -9,13 +9,12 @@ const { login } = require('./login');
 const { exploreModule } = require('./exploreLuminusDirectory');
 const { exploreLocalModules } = require('./exploreLocalDirectory');
 const { compareModules } = require('./compareDirectories');
-const { readDirectoryPath, readNumModules, readPrint } = require('./configParser');
+const { readDirectoryPath, readPrint } = require('./configParser');
+const { readNumModules } = require('./moduleParser');
 
 const DIRECTORY_PATH = readDirectoryPath();
 const NUM_MODULES = readNumModules();
 const PRINT = readPrint();
-// TODO: Allow custom module mappings for names
-
 
 /* MOVING AND SETTING UP LUMINUS */
 

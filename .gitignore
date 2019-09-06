@@ -5,3 +5,4 @@ package-lock.json
 *.swp
 
 CONFIG.txt
+MODULES.txt

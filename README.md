@@ -1,4 +1,6 @@
-# Guide
+# Setting up
+
+### `CONFIG.txt`
 
 Copy the file `CONFIG_EXAMPLE.txt` into a new file `CONFIG.txt`.
 
@@ -6,8 +8,15 @@ Replace the following fields accordingly:
 * `username` NUSNET username
 * `password` NUSNET password
 * `directory_path` Path of your local directory to compare to LumiNUS, *relative to your home directory*
-* `num_modules` Number of modules you're taking (this helps to speed things up because LumiNUS can be rather slow)
 * `print` Whether you want to display extra information or not -- either `true` or `false`
+
+### `MODULES.txt`
+
+Copy the file `MODULES_EXAMPLE.txt` into a new file `MODULES.txt`.
+
+Each line should be present for each module that appears in your LumiNUS module board. It should be in the format `<LumiNUS module name>: <Local folder name>`. This helps to map the LumiNUS module to your local folder.
+
+# Running the script
 
 Run `npm install`, then run the main script using `node main.js`.
 

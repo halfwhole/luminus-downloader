@@ -1,12 +1,15 @@
 const { readPrint } = require('./configParser');
+const { readModuleMapping } = require('./moduleParser');
 
 const PRINT = readPrint();
+const MAPPING = readModuleMapping();
 
 // Entry point for comparing two lists of modules
 // Compares a list of modules with another list of matching modules
+// First module list will be marked with 'diff' (LumiNUS), second module list won't (local)
 function compareModules(moduleList1, moduleList2) {
     for (const module1 of moduleList1) {
-        const module2 = moduleList2.filter(module2 => module2.code === module1.code)[0];
+        const module2 = moduleList2.filter(module2 => MAPPING[module1.code] === module2.code)[0];
         if (module2 === undefined) {
             if (PRINT) console.log('Could not find matching module for ' + module1.code);
         } else {
