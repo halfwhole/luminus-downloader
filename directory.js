@@ -40,7 +40,7 @@ class Folder {
     }
     toString(level) {
         return '  '.repeat(level) + '* ' + this.name + ' (' + this.folderStatus + ')'
-            + (this.diff ? ' (diff)' : '');
+            + (this.diff ? ' [new]' : '');
     }
 }
 
@@ -54,7 +54,7 @@ class File {
     }
     toString(level) {
         return '  '.repeat(level) + '* ' + this.name + ' (last modified by: '
-            + this.lastModifiedBy + ')' + (this.diff ? ' (diff)' : '');
+            + this.lastModifiedBy + ')' + (this.diff ? ' [new]' : '');
     }
 }
 

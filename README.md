@@ -22,7 +22,7 @@ Run `npm install`, then run the main script using `node main.js`.
 
 ### Sample output
 
-Files and folders that are in LumiNUS but not your local directory are marked with 'diff':
+Files and folders that are in LumiNUS but not your local directory are marked with `[new]`:
 
 ```
 Accessing LumiNUS ... done!
@@ -47,33 +47,28 @@ Done with UQF2101I
 USPRA101: Cinnamon College (AY2019/20 - Semester 1)
 
 CS2106: Introduction to Operating Systems
-* Tutorials (Open)
-  * T03_code.zip (last modified by: Cristina Carbunaru) (diff)
-  * Tutorial03.pdf (last modified by: Cristina Carbunaru) (diff)
-  * Tutorial01 - Selected Solutions.pdf (last modified by: Cristina Carbunaru) (diff)
+* Labs (Open)
+  * lab2.pdf (last modified by: Cristina Carbunaru) [new]
+  * lab2.tar.gz (last modified by: Cristina Carbunaru) [new]
+* Lecture Notes (Open)
+  * L4 - IPC.pdf (last modified by: Cristina Carbunaru) [new]
+  * L5 - Process Alternative - Threads.pdf (last modified by: Cristina Carbunaru) [new]
 
 CS2104: Programming Language Concepts
-* Tutorial 1 Submission (not graded) (Open) (diff)
 * Tutorials + Assignments (Open)
-  * Lab01.hs (last modified by: Chin Wei Ngan) (diff)
+  * Tut3.hs (last modified by: Chin Wei Ngan) [new]
+  * Tut1ans.hs (last modified by: Chin Wei Ngan) [new]
+  * Lab01-with-err.hs (last modified by: Chin Wei Ngan) [new]
 
 MA2216/ST2131: Probability
+* Homework and Tutorial Questions (Open)
+  * Tutorial 2 Soln.pdf (last modified by: Sun Rongfeng) [new]
 
 CS3230: Design and Analysis of Algorithms
-* Assignments (Open)
-  * Assignment4.pdf (last modified by: Divesh Aggarwal) (diff)
 
 CS2103/CS2103T: Software Engineering
+* Handouts (Open)
+  * L4.pptx (last modified by: Damith C. Rajapakse) [new]
 
 UQF2101I: QUANTITATIVE REASONING FOUNDATION: QUANTIFYING ENVIRONMENTAL QUALITY
-* Lecture Notes (Open)
-  * Week 4 Class 2 notes (Open) (diff)
-    * TableauPublicDesktop.zip (last modified by: Edmund Low) (diff)
-    * Air Quality Data - QR Class (Tab) .xlsx (last modified by: Edmund Low) (diff)
-    * Homework 4.pdf (last modified by: Edmund Low) (diff)
-  * Week 4 Class 1 (Open) (diff)
-    * Week 4 Class 1 - slides.pdf (last modified by: Edmund Low) (diff)
-  * Week 3 Class 2 notes (Open) (diff)
-    * Week 3 Class 2 - slides.pdf (last modified by: Edmund Low) (diff)
-  * Independent Learning Assignment Slides (Open) (diff)
 ```

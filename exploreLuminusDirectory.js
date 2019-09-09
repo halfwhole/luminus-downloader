@@ -46,20 +46,24 @@ async function exploreFolderPage(page, descriptor) {
 }
 
 // Returns: an array of folders
-// NOTE: filters out folders that aren't open, or are submission folders
+// NOTE: ignores folders that aren't open, or are submission folders
 async function getFolders(page) {
     let folders = [];
-    // TODO: Handle open folders only
     await page.waitForSelector('list-view-item');
 
     const folderGroup = await page.$('div.folders');
     if (folderGroup === null) return folders;
 
-    // Filter for indices of folders that are not submission folders
+    // Filter for indices of folders that are not submission folders (with files)
     const folderItems = await folderGroup.$$('list-view-item');
-    const promises = await folderItems.map(item => item.$('icon[name=submissionFolder]'));
-    const outcomes = await Promise.all(promises);
-    const filteredFolderIndices = [...folderItems.keys()].filter(i => outcomes[i] === null);
+    const promises1 = await folderItems.map(item => item.$('icon[name=submissionFolder]'));
+    const promises2 = await folderItems.map(item => item.$('icon[name=submissionFolderWithFiles]'));
+    const promises3 = await folderItems.map(item => item.$eval('folder-status', elem => elem.innerText));
+    const outcomes1 = await Promise.all(promises1);
+    const outcomes2 = await Promise.all(promises2);
+    const outcomes3 = await Promise.all(promises3);
+    const filteredFolderIndices = [...folderItems.keys()]
+        .filter(i => outcomes1[i] === null && outcomes2[i] === null && outcomes3[i] === 'Open');
     if (filteredFolderIndices === null) return folders;
 
     for (const itemPos of filteredFolderIndices) {
