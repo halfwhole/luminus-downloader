@@ -62,10 +62,9 @@ async function getFolders(page) {
     const filteredFolderIndices = [...folderItems.keys()].filter(i => outcomes[i] === null);
     if (filteredFolderIndices === null) return folders;
 
-
-    for (let itemPos of filteredFolderIndices) {
+    for (const itemPos of filteredFolderIndices) {
         const folderItem = folderItems[itemPos];
-        const folderName = await folderItem.$eval('.filename', elem => elem.innerText);
+        const folderName = (await folderItem.$eval('.filename', elem => elem.innerText)).trim();
         const folderStatusElem = await folderItem.$('folder-status');
         const folderStatus = await folderStatusElem.$eval('span', elem => elem.innerText);
 
