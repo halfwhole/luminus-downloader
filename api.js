@@ -1,11 +1,13 @@
 const request = require('request');
 
-const AUTH_CODE = '';
+// TODO: need to find a way to login and retrieve authorization
+const AUTH = '';
 const API_BASE = 'https://luminus.nus.edu.sg/v2/api/';
 
+// Returns a promise with the body of a GET request directed to API_BASE + path
 function queryAPI(path) {
     const options = {
-        headers: { 'Authorization': AUTH_CODE },
+        headers: { 'Authorization': AUTH },
         uri: API_BASE + path,
         method: 'GET'
     }
@@ -23,18 +25,77 @@ async function exploreModules() {
     return await queryAPI(MODULE_PATH);
 }
 
-async function exploreModule(module_id) {
-    console.log(module_id);
-    const FILES_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + module_id;
-    return await queryAPI(FILES_PATH);
+async function exploreModule(parent_id) {
+    const FOLDER_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + parent_id;
+    const FILES_PATH  = 'files/' + parent_id + '/file?populate=Creator%2ClastUpdatedUser%2Ccomment';
+    const folders = await queryAPI(FOLDER_PATH);
+    const files   = await queryAPI(FILES_PATH);
+
+    // TODO: How do we tell if a folder is open/closed? A submission folder or not (allowUpload, maybe)?
+
+    /* EXAMPLE OF A FOLDER
+    { access:
+        { access_Full: false,
+          access_Read: true,
+          access_Create: false,
+          access_Update: false,
+          access_Delete: false,
+          access_Settings_Read: false,
+          access_Settings_Update: false },
+      id: '9fce3f35-d6ab-4114-961c-bf141449f500',
+      createdDate: '2019-01-11T14:48:00+08:00',
+      creatorID: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+      lastUpdatedDate: '2019-07-22T14:14:20.02+08:00',
+      lastUpdatedBy: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+      name: 'Lecture Notes',
+      startDate: '2019-08-12T14:48:00+08:00',
+      endDate: '2019-12-12T14:48:00+08:00',
+      publish: true,
+      parentID: 'ffbd17d6-094a-4493-89c5-168f47b729b9',
+      rootID: 'ffbd17d6-094a-4493-89c5-168f47b729b9',
+      sortFilesBy: 'Date',
+      allowUpload: false,
+      uploadDisplayOption: 'Name',
+      viewAll: true,
+      folderScore: 0,
+      allowComments: true,
+      isTurnitinFolder: false,
+      totalFileCount: 26,
+      totalSize: 390119172,
+      subFolderCount: 22 } ]
+    */
+
+    /* EXAMPLE OF A FILE
+     { id: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
+       parentID: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
+       resourceID: '30f331f0-51c1-4261-ad3d-973119fb76b8',
+       publish: true,
+       name: 'Test 1 AY1920 Instructions.pdf',
+       allowDownload: true,
+       fileSize: 245018,
+       fileFormat: 'File',
+       fileName: 'Test 1 AY1920 Instructions.pdf',
+       creatorID: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+       createdDate: '2019-09-09T18:58:58.817+08:00',
+       creatorName: 'Edmund Low',
+       creatorUserID: 'usplsye',
+       creatorEmail: 'usplsye@nus.edu.sg',
+       creatorMatricNo: '049907',
+       lastUpdatedDate: '2019-09-09T18:58:58.817+08:00',
+       lastUpdatedBy: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+       lastUpdatedByName: 'Edmund Low',
+       lastUpdatedByUserID: 'usplsye',
+       lastUpdatedByEmail: 'usplsye@nus.edu.sg',
+       lastUpdatedByMatricNo: '049907',
+       comment: [] }
+    */
+   return { folders: folders, files: files }
 }
 
 // main() is for testing only
 async function main() {
     const modules = await exploreModules();
     const module_ids = modules.map(module => module['id']);
-    const module = await exploreModule(module_ids[2]);
-    console.log(module);
 }
 
 main();
