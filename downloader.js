@@ -22,24 +22,22 @@ async function downloadNewFoldersFilesInFolder(auth, folder, base_path) {
 }
 
 async function downloadNewFolders(auth, folders, path) {
-    // TODO: make async?
-    for (const folder of folders) {
+    const downloadPromises = folders.map(folder => {
         if (folder.diff) {
-            await downloadFolder(auth, folder.id, folder.name, path);
+            return downloadFolder(auth, folder.id, folder.name, path);
         } else {
             // Recursively explores non-different folders for new children
-            await downloadNewFoldersFilesInFolder(auth, folder, path);
+            return downloadNewFoldersFilesInFolder(auth, folder, path);
         }
-    }
+    });
+    await Promise.all(downloadPromises);
 }
 
 async function downloadNewFiles(auth, files, path) {
-    // TODO: make async?
-    for (const file of files) {
-        if (file.diff) {
-            await downloadFile(auth, file.id, file.name, path);
-        }
-    }
+    const downloadPromises = files.filter(file => file.diff).map(file => {
+        return downloadFile(auth, file.id, file.name, path);
+    });
+    await Promise.all(downloadPromises);
 }
 
 /* HELPER FUNCTIONS FOR DOWNLOADING AND WRITING FILES/FOLDERS */

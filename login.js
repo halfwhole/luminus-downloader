@@ -40,7 +40,7 @@ async function login() {
         page.on('request', async (request) => {
             if (request.url() === 'https://luminus.nus.edu.sg/v2/api/user/Profile?populate=photo,groupId,userRole') {
                 await browser.close();
-                console.log('done!');
+                if (PRINT) console.log('done!\n');
                 resolve(request.headers()['authorization']);
             } else {
                 request.continue();

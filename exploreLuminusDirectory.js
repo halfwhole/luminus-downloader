@@ -68,12 +68,16 @@ async function exploreModules(auth) {
     });
 
     // Recursively explore its children for folders
-    // TODO: can explore asynchronously for further speedup ;)
-    for (const module of modules) {
-        if (PRINT) console.log('Exploring ' + module.code + ': ' + module.name + ' ...');
-        const folders = await exploreFolders(auth, module.id);
-        module.populateFolders(folders);
-    }
+    const promises = modules.map(module => {
+        return new Promise(async (resolve, reject) => {
+            if (PRINT) console.log('Exploring ' + module.code + ': ' + module.name + ' ...');
+            const folders = await exploreFolders(auth, module.id);
+            module.populateFolders(folders);
+            resolve();
+        });
+    });
+    await Promise.all(promises);
+    if (PRINT) console.log();
 
     return modules;
 }
