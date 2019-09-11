@@ -18,24 +18,24 @@ function queryAPI(auth, path) {
     });
 }
 
-// Returns a promise containing the body of the downloaded file as a buffer
-async function downloadAPI(auth, file_id) {
-    function getDownloadURL() {
-        const options = {
-            headers: { 'Authorization': auth },
-            uri: 'https://luminus.nus.edu.sg/v2/api/files/file/' + file_id + '/downloadurl',
-            method: 'GET'
-        }
-        return new Promise(function(resolve, reject) {
-            request(options, (err, res, body) => {
-                if (err) return reject(err);
-                if (res.statusCode != 200) return reject(res.statusMessage);
-                resolve(JSON.parse(body)['data']);
-            })
-        });
+function getDownloadURL(auth, url) {
+    const options = {
+        headers: { 'Authorization': auth },
+        uri: url,
+        method: 'GET'
     }
+    return new Promise(function(resolve, reject) {
+        request(options, (err, res, body) => {
+            if (err) return reject(err);
+            if (res.statusCode != 200) return reject(res.statusMessage);
+            resolve(JSON.parse(body)['data']);
+        })
+    });
+}
 
-    const downloadURL = await getDownloadURL();
+// Returns a promise containing the body of the downloaded file/folder as a buffer
+async function downloadAPI(auth, url) {
+    const downloadURL = await getDownloadURL(auth, url);
     const options = {
         headers: { 'Authorization': auth },
         uri: downloadURL,
@@ -51,4 +51,14 @@ async function downloadAPI(auth, file_id) {
     });
 }
 
-module.exports = { queryAPI, downloadAPI };
+async function downloadFileAPI(auth, file_id) {
+    const file_url = 'https://luminus.nus.edu.sg/v2/api/files/file/' + file_id + '/downloadurl';
+    return await downloadAPI(auth, file_url);
+}
+
+async function downloadFolderAPI(auth, folder_id) {
+    const folder_url = 'https://luminus.nus.edu.sg/v2/api/files/' + folder_id + '/downloadurl';
+    return await downloadAPI(auth, folder_url);
+}
+
+module.exports = { queryAPI, downloadFileAPI, downloadFolderAPI };

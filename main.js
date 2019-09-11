@@ -9,6 +9,7 @@ const { exploreModules } = require('./exploreLuminusDirectory');
 const { exploreLocalModules } = require('./exploreLocalDirectory');
 const { compareModules } = require('./compareDirectories');
 const { readDirectoryPath, readPrint } = require('./configParser');
+const { downloadNewFoldersFilesInModule } = require('./downloader');
 
 const DIRECTORY_PATH = path.join(os.homedir(), readDirectoryPath());
 const PRINT = readPrint();
@@ -27,13 +28,11 @@ async function moveToLumiNUS(page, print = false) {
 /* MAIN PROCESS */
 
 async function main() {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-
+    // const browser = await puppeteer.launch();
+    // const page = await browser.newPage();
     // await moveToLumiNUS(page, PRINT);
     // await login(page);
-
-    await browser.close();
+    // await browser.close();
 
     const modules = await exploreModules(AUTH);
     const localModules = exploreLocalModules(DIRECTORY_PATH);
@@ -46,6 +45,11 @@ async function main() {
         if (!first) console.log();
         first = false;
         module.print(true);
+    }
+
+    for (const module of modules) {
+        // Need to ignore unmapped-modules, and take module name as mapped module name
+        await downloadNewFoldersFilesInModule(AUTH, module, DIRECTORY_PATH);
     }
 }
 

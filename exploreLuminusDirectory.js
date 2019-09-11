@@ -1,8 +1,10 @@
 const { Module, Folder, File } = require('./directory');
+const { readModuleMapping } = require('./moduleParser');
 const { readPrint } = require('./configParser');
 const { queryAPI } = require('./api');
 
 const PRINT = readPrint();
+const MAPPING = readModuleMapping();
 
 // TODO: Refactor queryAPI for modules, files, folders into api.js
 
@@ -56,8 +58,13 @@ async function exploreModules(auth) {
 
     const MODULE_PATH = 'module/?populate=Creator%2CtermDetail%2CisMandatory';
     const modulesInfo = await queryAPI(auth, MODULE_PATH);
-    const modules = modulesInfo.map(moduleInfo => {
-        return new Module(moduleInfo['id'], moduleInfo['name'], moduleInfo['courseName']);
+    // Filter out modules that haven't been mapped in MODULES.txt
+    const filteredModulesInfo = modulesInfo.filter(moduleInfo => {
+        return Object.keys(MAPPING).includes(moduleInfo['name']);
+    });
+    // Map module codes according to user-defined module mappings
+    const modules = filteredModulesInfo.map(moduleInfo => {
+        return new Module(moduleInfo['id'], MAPPING[moduleInfo['name']], moduleInfo['courseName']);
     });
 
     // Recursively explore its children for folders
