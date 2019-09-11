@@ -10,7 +10,7 @@ const { exploreLocalModules } = require('./exploreLocalDirectory');
 const { compareModules } = require('./compareDirectories');
 const { readDirectoryPath, readPrint } = require('./configParser');
 
-const DIRECTORY_PATH = readDirectoryPath();
+const DIRECTORY_PATH = path.join(os.homedir(), readDirectoryPath());
 const PRINT = readPrint();
 
 // TODO: need to find a way to login and retrieve authorization
@@ -36,7 +36,7 @@ async function main() {
     await browser.close();
 
     const modules = await exploreModules(AUTH);
-    const localModules = exploreLocalModules(path.join(os.homedir(), DIRECTORY_PATH));
+    const localModules = exploreLocalModules(DIRECTORY_PATH);
     compareModules(modules, localModules);
 
     if (PRINT) console.log();

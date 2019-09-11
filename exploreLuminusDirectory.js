@@ -1,6 +1,6 @@
 const { Module, Folder, File } = require('./directory');
 const { readPrint } = require('./configParser');
-const { getAPI } = require('./api');
+const { queryAPI } = require('./api');
 
 const PRINT = readPrint();
 
@@ -53,7 +53,7 @@ async function exploreModules(auth) {
     */
 
     const MODULE_PATH = 'module/?populate=Creator%2CtermDetail%2CisMandatory';
-    const modulesInfo = await getAPI(auth, MODULE_PATH);
+    const modulesInfo = await queryAPI(auth, MODULE_PATH);
     const modules = modulesInfo.map(moduleInfo => {
         return new Module(moduleInfo['id'], moduleInfo['name'], moduleInfo['courseName']);
     });
@@ -103,7 +103,7 @@ async function exploreFolders(auth, parent_id) {
     */
 
     const FOLDER_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + parent_id;
-    const foldersInfo = await getAPI(auth, FOLDER_PATH);
+    const foldersInfo = await queryAPI(auth, FOLDER_PATH);
     // Filter for folders that aren't submission folders, and are open folders
     const filteredFoldersInfo = foldersInfo.filter(folderInfo => {
         return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] != null;
@@ -150,7 +150,7 @@ async function exploreFiles(auth, parent_id) {
     */
 
     const FILES_PATH  = 'files/' + parent_id + '/file?populate=Creator%2ClastUpdatedUser%2Ccomment';
-    const filesInfo = await getAPI(auth, FILES_PATH);
+    const filesInfo = await queryAPI(auth, FILES_PATH);
     const files = filesInfo.map(fileInfo => {
         return new File(fileInfo['id'], fileInfo['fileName'], fileInfo['lastUpdatedByName']);
     });
