@@ -32,9 +32,5 @@ function readDirectoryPath() {
     return read('directory_path');
 }
 
-function readNumModules() {
-    return parseInt(read('num_modules'));
-}
-
-module.exports = { readUsername, readPassword, readPrint, readDirectoryPath, readNumModules };
+module.exports = { readUsername, readPassword, readPrint, readDirectoryPath };
 

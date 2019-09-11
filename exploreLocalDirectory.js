@@ -3,6 +3,8 @@ const fs = require('fs');
 
 const { Module, Folder, File } = require('./directory');
 
+const DUMMY_ID = '';
+
 // Entry point for exploring the local directory
 // Returns: an array of Modules in the folder path
 function exploreLocalModules(folderPath) {
@@ -30,7 +32,7 @@ function exploreLocalFoldersFiles(folderPath) {
         return exploreLocalFolder(folderPath, folderName);
     });
     const files = fileNames.map(fileName => {
-        return new File(fileName);
+        return new File(DUMMY_ID, fileName);
     });
 
     return { 'folders': folders, 'files': files };
@@ -42,7 +44,11 @@ function exploreLocalFolder(folderPath, folderName) {
     const localFoldersFiles = exploreLocalFoldersFiles(newPath);
     const folders = localFoldersFiles['folders'];
     const files = localFoldersFiles['files'];
-    return new Folder(folderName, '', files, folders);
+
+    const folder = new Folder(DUMMY_ID, folderName);
+    folder.populateFolders(folders);
+    folder.populateFiles(files);
+    return folder;
 }
 
 // Returns: a Module
@@ -50,7 +56,10 @@ function exploreLocalModule(folderPath, moduleCode) {
     const newPath = path.join(folderPath, moduleCode);
     const localFoldersFiles = exploreLocalFoldersFiles(newPath);
     const folders = localFoldersFiles['folders'];
-    return new Module(moduleCode, '', folders);
+
+    const module = new Module(DUMMY_ID, moduleCode, '');
+    module.populateFolders(folders);
+    return module;
 }
 
 module.exports = { exploreLocalModules };

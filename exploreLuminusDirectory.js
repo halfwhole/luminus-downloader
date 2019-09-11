@@ -1,118 +1,160 @@
 const { Module, Folder, File } = require('./directory');
 const { readPrint } = require('./configParser');
+const { getAPI } = require('./api');
 
 const PRINT = readPrint();
 
-// Pre-condition: the page is at the main folder page of a 'Files' tab
-// Returns: a Module
-async function exploreModule(page, moduleCode, moduleName) {
-    if (PRINT) console.log('Exploring ' + moduleCode + ' ...');
+// Entry point for exploring all modules
+// Returns: an array of Modules
+async function exploreModules(auth) {
+    /* EXAMPLE OF A MODULE
+    { id: '3f294850-b35f-452e-929c-95822999fc20',
+      createdDate: '2019-07-08T10:34:59.137+08:00',
+      creatorID: '5f0d8587-f144-4c23-91e1-9cef106e2ed8',
+      lastUpdatedDate: '2019-08-15T14:35:28.43+08:00',
+      lastUpdatedBy: '5f0d8587-f144-4c23-91e1-9cef106e2ed8',
+      name: 'CS2106',
+      startDate: '2019-07-08T10:34:00+08:00',
+      endDate: '2019-12-21T23:59:00+08:00',
+      publish: true,
+      parentID: '3f294850-b35f-452e-929c-95822999fc20',
+      resourceID: '00000000-0000-0000-0000-000000000000',
+      access:
+       { access_Full: false,
+         access_Read: true,
+         access_Create: false,
+         access_Update: false,
+         access_Delete: false,
+         access_Settings_Read: false,
+         access_Settings_Update: false },
+      courseName: 'Introduction to Operating Systems',
+      facultyCode: '39',
+      departmentCode: '252',
+      term: '1910',
+      acadCareer: 'UGRD',
+      courseSearchable: true,
+      allowAnonFeedback: 'N',
+      displayLibGuide: false,
+      copyFromID: '00000000-0000-0000-0000-000000000000',
+      l3: false,
+      enableLearningFlow: true,
+      usedNusCalendar: false,
+      isCorporateCourse: false,
+      creatorUserID: 'dcscrist',
+      creatorName: 'Cristina Carbunaru',
+      creatorEmail: 'dcscrist@nus.edu.sg',
+      termDetail:
+       { acadCareer: 'UGRD',
+         term: '1910',
+         description: '2019/2020 Semester 1',
+         termBeginDate: '2019-08-05T00:00:00+08:00',
+         termEndDate: '2019-12-07T00:00:00+08:00' },
+      isMandatory: false }
+    */
 
-    // If a module has no files/folders, return an empty module
-    const content = await page.waitForSelector('#content');
-    if (await page.$('p.empty') !== null &&
-        await page.$eval('p.empty', elem => elem.innerText) === 'No folders.') {
-        if (PRINT) console.log('Done with ' + moduleCode + ', no folders found');
-        return new Module(moduleCode, moduleName, []);
+    const MODULE_PATH = 'module/?populate=Creator%2CtermDetail%2CisMandatory';
+    const modulesInfo = await getAPI(auth, MODULE_PATH);
+    const modules = modulesInfo.map(moduleInfo => {
+        return new Module(moduleInfo['id'], moduleInfo['name'], moduleInfo['courseName']);
+    });
+
+    // Recursively explore its children for folders
+    // TODO: can explore asynchronously for further speedup ;)
+    for (const module of modules) {
+        if (PRINT) console.log('Exploring ' + module.code + ': ' + module.name + ' ...');
+        const folders = await exploreFolders(auth, module.id);
+        module.populateFolders(folders);
     }
 
-    // If a module has files/folders, explore it further
-    const foldersFiles = await exploreFolderPage(page, moduleCode);
-    const folders = foldersFiles['folders'];
-    const files = foldersFiles['files'];
-    const module = new Module(moduleCode, moduleName, folders);
-
-    if (PRINT) console.log('Done with ' + moduleCode);
-    return module;
+    return modules;
 }
 
+async function exploreFolders(auth, parent_id) {
+    /* EXAMPLE OF A FOLDER
+    { access:
+        { access_Full: false,
+          access_Read: true,
+          access_Create: false,
+          access_Update: false,
+          access_Delete: false,
+          access_Settings_Read: false,
+          access_Settings_Update: false },
+      id: '9fce3f35-d6ab-4114-961c-bf141449f500',
+      createdDate: '2019-01-11T14:48:00+08:00',
+      creatorID: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+      lastUpdatedDate: '2019-07-22T14:14:20.02+08:00',
+      lastUpdatedBy: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+      name: 'Lecture Notes',
+      startDate: '2019-08-12T14:48:00+08:00',
+      endDate: '2019-12-12T14:48:00+08:00',
+      publish: true,
+      parentID: 'ffbd17d6-094a-4493-89c5-168f47b729b9',
+      rootID: 'ffbd17d6-094a-4493-89c5-168f47b729b9',
+      sortFilesBy: 'Date',
+      allowUpload: false,
+      uploadDisplayOption: 'Name',
+      viewAll: true,
+      folderScore: 0,
+      allowComments: true,
+      isTurnitinFolder: false,
+      totalFileCount: 26,
+      totalSize: 390119172,
+      subFolderCount: 22 } ]
+    */
 
-// Pre-condition: the page is at the sub-folder you wish to explore
-// Returns: a Folder
-async function exploreFolder(page, folderName, folderStatus) {
-    const foldersFiles = await exploreFolderPage(page, folderName);
-    const folders = foldersFiles['folders'];
-    const files = foldersFiles['files'];
-    const folder = new Folder(folderName, folderStatus, files, folders);
-    return folder;
-}
+    const FOLDER_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + parent_id;
+    const foldersInfo = await getAPI(auth, FOLDER_PATH);
+    // Filter for folders that aren't submission folders, and are open folders
+    const filteredFoldersInfo = foldersInfo.filter(folderInfo => {
+        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] != null;
+    });
+    const folders = filteredFoldersInfo.map(folderInfo => {
+        return new Folder(folderInfo['id'], folderInfo['name'].trim());
+    });
 
-// Pre-condition: the page is at the folder you wish to explore
-// Returns: an object with array of folders, and an array of files
-async function exploreFolderPage(page, descriptor) {
-    const folders = await getFolders(page);
-    const files = await getFiles(page);
-    return { 'folders': folders, 'files': files };
-}
-
-// Returns: an array of folders
-// NOTE: ignores folders that aren't open, or are submission folders
-async function getFolders(page) {
-    let folders = [];
-    await page.waitForSelector('list-view-item');
-
-    const folderGroup = await page.$('div.folders');
-    if (folderGroup === null) return folders;
-
-    // Filter for indices of folders that are not submission folders (with files)
-    const folderItems = await folderGroup.$$('list-view-item');
-    const promises1 = await folderItems.map(item => item.$('icon[name=submissionFolder]'));
-    const promises2 = await folderItems.map(item => item.$('icon[name=submissionFolderWithFiles]'));
-    const promises3 = await folderItems.map(item => item.$eval('folder-status', elem => elem.innerText));
-    const outcomes1 = await Promise.all(promises1);
-    const outcomes2 = await Promise.all(promises2);
-    const outcomes3 = await Promise.all(promises3);
-    const filteredFolderIndices = [...folderItems.keys()]
-        .filter(i => outcomes1[i] === null && outcomes2[i] === null && outcomes3[i] === 'Open');
-    if (filteredFolderIndices === null) return folders;
-
-    for (const itemPos of filteredFolderIndices) {
-        const folderItem = folderItems[itemPos];
-        const folderName = (await folderItem.$eval('.filename', elem => elem.innerText)).trim();
-        const folderStatusElem = await folderItem.$('folder-status');
-        const folderStatus = await folderStatusElem.$eval('span', elem => elem.innerText);
-
-        // Enter the folder
-        await page.$$('list-view-item');
-        await page.evaluate(folderPos => {
-            document.querySelector('div.folders')
-                    .querySelectorAll('list-view-item')[folderPos]
-                    .click();
-        }, itemPos);
-        await page.waitForNavigation();
-
-        const folder = await exploreFolder(page, folderName, folderStatus);
-        folders.push(folder);
-
-        // Exit the folder
-        await page.goBack();
-        await page.waitForNavigation();
+    // Recursively explore its children for folders and files
+    for (const folder of folders) {
+        const subFolders = await exploreFolders(auth, folder.id);
+        const subFiles   = await exploreFiles(auth, folder.id);
+        folder.populateFolders(subFolders);
+        folder.populateFiles(subFiles);
     }
 
     return folders;
 }
 
-// Returns: an array of files
-async function getFiles(page) {
-    let files = [];
+async function exploreFiles(auth, parent_id) {
+    /* EXAMPLE OF A FILE
+     { id: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
+       parentID: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
+       resourceID: '30f331f0-51c1-4261-ad3d-973119fb76b8',
+       publish: true,
+       name: 'Test 1 AY1920 Instructions.pdf',
+       allowDownload: true,
+       fileSize: 245018,
+       fileFormat: 'File',
+       fileName: 'Test 1 AY1920 Instructions.pdf',
+       creatorID: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+       createdDate: '2019-09-09T18:58:58.817+08:00',
+       creatorName: 'Edmund Low',
+       creatorUserID: 'usplsye',
+       creatorEmail: 'usplsye@nus.edu.sg',
+       creatorMatricNo: '049907',
+       lastUpdatedDate: '2019-09-09T18:58:58.817+08:00',
+       lastUpdatedBy: 'e98ffb04-eb4e-4f97-ab58-76ef3950b566',
+       lastUpdatedByName: 'Edmund Low',
+       lastUpdatedByUserID: 'usplsye',
+       lastUpdatedByEmail: 'usplsye@nus.edu.sg',
+       lastUpdatedByMatricNo: '049907',
+       comment: [] }
+    */
 
-    const fileGroup = await page.$('div.files');
-    if (fileGroup === null) return files;
-
-    const fileItems = await fileGroup.$$('list-view-item');
-    await page.waitForSelector('.filename'); // Just for safety: remove?
-    await page.waitForSelector('div.user');  // Just for safety: remove?
-
-    for (let itemPos = 0; itemPos < fileItems.length; itemPos++) {
-        const fileItem = fileItems[itemPos];
-        const fileName = await fileItem.$eval('.filename', elem => elem.innerText);
-        const lastModifiedBy = await fileItem.$eval('div.user', elem => elem.innerText);
-        const file = new File(fileName, lastModifiedBy);
-        files.push(file);
-    }
-
+    const FILES_PATH  = 'files/' + parent_id + '/file?populate=Creator%2ClastUpdatedUser%2Ccomment';
+    const filesInfo = await getAPI(auth, FILES_PATH);
+    const files = filesInfo.map(fileInfo => {
+        return new File(fileInfo['id'], fileInfo['fileName'], fileInfo['lastUpdatedByName']);
+    });
     return files;
 }
 
-module.exports = { exploreModule };
-
+module.exports = { exploreModules };

@@ -21,15 +21,5 @@ function readModuleMapping() {
     }
 }
 
-function readNumModules() {
-    try {
-        const data = fs.readFileSync(MODULES_FILE, 'utf8').toString();
-        const lines = data.split('\n');
-        return lines.filter(line => line.trim() !== '').length;
-    } catch (e) {
-        throw 'Could not read number of modules from ' + MODULES_FILE + ', terminating.';
-    }
-}
-
-module.exports = { readModuleMapping, readNumModules };
+module.exports = { readModuleMapping };
 
