@@ -1,8 +1,11 @@
-// folders should be [] if empty
 class Module {
-    constructor(code, name, folders) {
+    constructor(id, code, name) {
+        this.id = id;
         this.code = code;
         this.name = name;
+        this.folders = [];
+    }
+    populateFolders(folders) {
         this.folders = folders;
     }
     // 'diff' is a flag indicating if everything in the module should be printed,
@@ -16,13 +19,18 @@ class Module {
     }
 }
 
-// files and folders should be [] if empty
 class Folder {
-    constructor(name, folderStatus, files, folders) {
+    constructor(id, name) {
+        this.id = id;
         this.name = name;
-        this.folderStatus = folderStatus;
-        this.files = files;
+        this.folders = [];
+        this.files = [];
+    }
+    populateFolders(folders) {
         this.folders = folders;
+    }
+    populateFiles(files) {
+        this.files = files;
     }
     print(level, diff = false) {
         if (!diff || this.anyDiff()) console.log(this.toString(level));
@@ -39,24 +47,21 @@ class Folder {
         return false;
     }
     toString(level) {
-        return '  '.repeat(level) + '* ' + this.name + ' (' + this.folderStatus + ')'
-            + (this.diff ? ' [new]' : '');
+        return '  '.repeat(level) + '* ' + this.name + (this.diff ? ' [new]' : '');
     }
 }
 
 class File {
-    constructor(name, lastModifiedBy) {
+    constructor(id, name) {
+        this.id = id;
         this.name = name;
-        this.lastModifiedBy = lastModifiedBy;
     }
     print(level, diff) {
         if (!diff || this.diff) console.log(this.toString(level));
     }
     toString(level) {
-        return '  '.repeat(level) + '* ' + this.name + ' (last modified by: '
-            + this.lastModifiedBy + ')' + (this.diff ? ' [new]' : '');
+        return '  '.repeat(level) + '* ' + this.name + (this.diff ? ' [new]' : '');
     }
 }
 
 module.exports = { Module, Folder, File };
-

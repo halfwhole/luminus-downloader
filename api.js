@@ -1,8 +1,12 @@
 const request = require('request');
 
+const { Module, Folder, File } = require('./directory');
+const { readPrint } = require('./configParser');
+
 // TODO: need to find a way to login and retrieve authorization
 const AUTH = '';
 const API_BASE = 'https://luminus.nus.edu.sg/v2/api/';
+const PRINT = readPrint();
 
 // Returns a promise with the body of a GET request directed to API_BASE + path
 function queryAPI(path) {
@@ -21,18 +25,68 @@ function queryAPI(path) {
 }
 
 async function exploreModules() {
+    /* EXAMPLE OF A MODULE
+    { id: '3f294850-b35f-452e-929c-95822999fc20',
+      createdDate: '2019-07-08T10:34:59.137+08:00',
+      creatorID: '5f0d8587-f144-4c23-91e1-9cef106e2ed8',
+      lastUpdatedDate: '2019-08-15T14:35:28.43+08:00',
+      lastUpdatedBy: '5f0d8587-f144-4c23-91e1-9cef106e2ed8',
+      name: 'CS2106',
+      startDate: '2019-07-08T10:34:00+08:00',
+      endDate: '2019-12-21T23:59:00+08:00',
+      publish: true,
+      parentID: '3f294850-b35f-452e-929c-95822999fc20',
+      resourceID: '00000000-0000-0000-0000-000000000000',
+      access:
+       { access_Full: false,
+         access_Read: true,
+         access_Create: false,
+         access_Update: false,
+         access_Delete: false,
+         access_Settings_Read: false,
+         access_Settings_Update: false },
+      courseName: 'Introduction to Operating Systems',
+      facultyCode: '39',
+      departmentCode: '252',
+      term: '1910',
+      acadCareer: 'UGRD',
+      courseSearchable: true,
+      allowAnonFeedback: 'N',
+      displayLibGuide: false,
+      copyFromID: '00000000-0000-0000-0000-000000000000',
+      l3: false,
+      enableLearningFlow: true,
+      usedNusCalendar: false,
+      isCorporateCourse: false,
+      creatorUserID: 'dcscrist',
+      creatorName: 'Cristina Carbunaru',
+      creatorEmail: 'dcscrist@nus.edu.sg',
+      termDetail:
+       { acadCareer: 'UGRD',
+         term: '1910',
+         description: '2019/2020 Semester 1',
+         termBeginDate: '2019-08-05T00:00:00+08:00',
+         termEndDate: '2019-12-07T00:00:00+08:00' },
+      isMandatory: false }
+    */
+
     const MODULE_PATH = 'module/?populate=Creator%2CtermDetail%2CisMandatory';
-    return await queryAPI(MODULE_PATH);
+    const modulesInfo = await queryAPI(MODULE_PATH);
+    const modules = modulesInfo.map(moduleInfo => {
+        return new Module(moduleInfo['id'], moduleInfo['name'], moduleInfo['courseName']);
+    });
+
+    // Recursively explore its children for folders
+    for (const module of modules) {
+        if (PRINT) console.log('Exploring ' + module.code + ': ' + module.name + ' ...');
+        const folders = await exploreFolders(module.id);
+        module.populateFolders(folders);
+    }
+
+    return modules;
 }
 
-async function exploreModule(parent_id) {
-    const FOLDER_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + parent_id;
-    const FILES_PATH  = 'files/' + parent_id + '/file?populate=Creator%2ClastUpdatedUser%2Ccomment';
-    const folders = await queryAPI(FOLDER_PATH);
-    const files   = await queryAPI(FILES_PATH);
-
-    // TODO: How do we tell if a folder is open/closed? A submission folder or not (allowUpload, maybe)?
-
+async function exploreFolders(parent_id) {
     /* EXAMPLE OF A FOLDER
     { access:
         { access_Full: false,
@@ -65,6 +119,28 @@ async function exploreModule(parent_id) {
       subFolderCount: 22 } ]
     */
 
+    const FOLDER_PATH = 'files/?populate=totalFileCount%2CsubFolderCount%2CTotalSize&ParentID=' + parent_id;
+    const foldersInfo = await queryAPI(FOLDER_PATH);
+    // Filter for folders that aren't submission folders, and are open folders
+    const filteredFoldersInfo = foldersInfo.filter(folderInfo => {
+        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] != null;
+    });
+    const folders = filteredFoldersInfo.map(folderInfo => {
+        return new Folder(folderInfo['id'], folderInfo['name'].trim());
+    });
+
+    // Recursively explore its children for folders and files
+    for (const folder of folders) {
+        const subFolders = await exploreFolders(folder.id);
+        const subFiles   = await exploreFiles(folder.id);
+        folder.populateFolders(subFolders);
+        folder.populateFiles(subFiles);
+    }
+
+    return folders;
+}
+
+async function exploreFiles(parent_id) {
     /* EXAMPLE OF A FILE
      { id: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
        parentID: '7bc2e06e-24e0-4e59-968d-db8686b214a5',
@@ -89,13 +165,22 @@ async function exploreModule(parent_id) {
        lastUpdatedByMatricNo: '049907',
        comment: [] }
     */
-   return { folders: folders, files: files }
+
+    const FILES_PATH  = 'files/' + parent_id + '/file?populate=Creator%2ClastUpdatedUser%2Ccomment';
+    const filesInfo = await queryAPI(FILES_PATH);
+    const files = filesInfo.map(fileInfo => {
+        return new File(fileInfo['id'], fileInfo['fileName'], fileInfo['lastUpdatedByName']);
+    });
+    return files;
 }
 
 // main() is for testing only
 async function main() {
     const modules = await exploreModules();
-    const module_ids = modules.map(module => module['id']);
+    for (const module of modules) {
+        console.log();
+        module.print();
+    }
 }
 
 main();
