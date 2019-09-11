@@ -4,6 +4,8 @@ const { queryAPI } = require('./api');
 
 const PRINT = readPrint();
 
+// TODO: Refactor queryAPI for modules, files, folders into api.js
+
 // Entry point for exploring all modules
 // Returns: an array of Modules
 async function exploreModules(auth) {

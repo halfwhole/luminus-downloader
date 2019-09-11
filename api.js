@@ -18,7 +18,7 @@ function queryAPI(auth, path) {
     });
 }
 
-// Returns a promise containing the contents of the downloaded file
+// Returns a promise containing the body of the downloaded file as a buffer
 async function downloadAPI(auth, file_id) {
     function getDownloadURL() {
         const options = {
@@ -39,7 +39,8 @@ async function downloadAPI(auth, file_id) {
     const options = {
         headers: { 'Authorization': auth },
         uri: downloadURL,
-        method: 'GET'
+        method: 'GET',
+        encoding: null // Allows `body` to be a buffer instead of a string by default
     }
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
