@@ -15,7 +15,6 @@ function read(property) {
     }
 }
 
-// TODO: can be simplified further into an object/dictionary
 function readUsername() {
     return read('username');
 }
