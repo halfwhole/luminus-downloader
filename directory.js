@@ -14,6 +14,13 @@ class Module {
         console.log(this.toString());
         this.folders.forEach(folder => folder.print(0, diff));
     }
+    // Tells you if anything in the module is diff
+    anyDiff() {
+        if (this.diff) return true;
+        const anyFolderDiff = this.folders.some(folder => folder.anyDiff());
+        if (anyFolderDiff) return true;
+        return false;
+    }
     toString() {
         return this.code + ': ' + this.name;
     }

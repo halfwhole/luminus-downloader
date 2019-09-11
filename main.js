@@ -25,6 +25,20 @@ async function moveToLumiNUS(page, print = false) {
     if (print) console.log('done!');
 }
 
+function printDiffModules(modules) {
+    let first = true;
+    for (const module of modules) {
+        const moduleDiff = module.anyDiff();
+        if (!moduleDiff) continue;
+        if (!first) console.log();
+        first = false;
+        module.print(true);
+    }
+    if (first) {
+        console.log('No new files or folders!');
+    }
+}
+
 /* MAIN PROCESS */
 
 async function main() {
@@ -38,19 +52,11 @@ async function main() {
     const localModules = exploreLocalModules(DIRECTORY_PATH);
     compareModules(modules, localModules);
 
-    if (PRINT) console.log();
-
-    let first = true;
     for (const module of modules) {
-        if (!first) console.log();
-        first = false;
-        module.print(true);
-    }
-
-    for (const module of modules) {
-        // Need to ignore unmapped-modules, and take module name as mapped module name
         await downloadNewFoldersFilesInModule(AUTH, module, DIRECTORY_PATH);
     }
+
+    printDiffModules(modules);
 }
 
 main()

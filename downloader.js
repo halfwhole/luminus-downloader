@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const unzip = require('unzipper');
 const path = require('path');
 const fs = require('fs');
 
@@ -42,17 +44,37 @@ async function downloadNewFiles(auth, files, path) {
 
 /* HELPER FUNCTIONS FOR DOWNLOADING AND WRITING FILES/FOLDERS */
 
-async function downloadFile(auth, file_id, file_name, path) {
+async function downloadFile(auth, file_id, file_name, base_path) {
     const buffer = await downloadFileAPI(auth, file_id);
-    await writeItem(buffer, file_name, path);
-    if (PRINT) console.log('Downloaded file ' + file_name + ' to ' + path);
+    await writeItem(buffer, file_name, base_path);
+    if (PRINT) console.log('Downloaded file ' + file_name + ' to ' + base_path);
 }
 
-async function downloadFolder(auth, folder_id, folder_name, path) {
+async function downloadFolder(auth, folder_id, folder_name, base_path) {
     const buffer = await downloadFolderAPI(auth, folder_id);
-    await writeItem(buffer, folder_name + '.zip', path);
-    // TODO: need to unzip folder
-    if (PRINT) console.log('Downloaded folder ' + folder_name + ' to ' + path);
+    await writeItem(buffer, folder_name + '.zip', base_path);
+    // Unzip folder
+    return new Promise((resolve, reject) => {
+        const zip_folder_path = path.join(base_path, folder_name + '.zip');
+        const temp_folder_name = crypto.createHash('sha1').update(Math.random().toString()).digest('hex');
+        const temp_folder_path = path.join(base_path, temp_folder_name);
+        const unzipExtractor = unzip.Extract({ path: temp_folder_path });
+        fs.createReadStream(zip_folder_path).pipe(unzipExtractor);
+        // TODO: how dirty, callback hell
+        unzipExtractor.on('close', () => {
+            fs.rename(path.join(temp_folder_path, folder_name), path.join(base_path, folder_name), err => {
+                if (err) reject(err);
+                fs.rmdir(temp_folder_path, err => {
+                    if (err) reject(err);
+                    fs.unlink(zip_folder_path, err => {
+                        if (err) reject(err);
+                        if (PRINT) console.log('Downloaded folder ' + folder_name + ' to ' + base_path);
+                        resolve();
+                    });
+                });
+            });
+        });
+    });
 }
 
 async function writeItem(buffer, name, base_path) {
@@ -63,17 +85,5 @@ async function writeItem(buffer, name, base_path) {
         });
     });
 }
-
-// For testing only
-async function main() {
-    const AUTH = '';
-    // const file_id = 'cfe83093-d8f1-4669-b921-abeaf747af7a';
-    // const file_name = 'T02_Parallel_Solved.c';
-    const folder_id = 'a4fcc83e-1bc8-4e9e-9569-e578e963d55e';
-    const folder_name = 'Lecture Notes.zip';
-    await downloadFolder(AUTH, folder_id, folder_name);
-}
-
-// main();
 
 module.exports = { downloadNewFoldersFilesInModule };
