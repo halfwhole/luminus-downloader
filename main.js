@@ -36,9 +36,10 @@ async function main() {
     const localModules = exploreLocalModules(DIRECTORY_PATH);
     compareModules(modules, localModules);
 
-    for (const module of modules) {
-        await downloadNewFoldersFilesInModule(auth, module, DIRECTORY_PATH);
-    }
+    const promises = modules.map(module => {
+        return downloadNewFoldersFilesInModule(auth, module, DIRECTORY_PATH);
+    });
+    await Promise.all(promises);
 
     printDiffModules(modules);
 }
