@@ -1,7 +1,5 @@
 'use strict';
 
-// TODO: Use `npm init` to create package.json
-
 const path = require('path');
 const os = require('os');
 

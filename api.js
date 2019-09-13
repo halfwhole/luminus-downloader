@@ -18,10 +18,10 @@ function queryAPI(auth, path) {
     });
 }
 
-function getDownloadURL(auth, url) {
+function getDownloadURL(auth, path) {
     const options = {
         headers: { 'Authorization': auth },
-        uri: url,
+        uri: API_BASE + path,
         method: 'GET'
     }
     return new Promise(function(resolve, reject) {
@@ -34,8 +34,8 @@ function getDownloadURL(auth, url) {
 }
 
 // Returns a promise containing the body of the downloaded file/folder as a buffer
-async function downloadAPI(auth, url) {
-    const downloadURL = await getDownloadURL(auth, url);
+async function downloadAPI(auth, path) {
+    const downloadURL = await getDownloadURL(auth, path);
     const options = {
         headers: { 'Authorization': auth },
         uri: downloadURL,
@@ -52,13 +52,13 @@ async function downloadAPI(auth, url) {
 }
 
 async function downloadFileAPI(auth, file_id) {
-    const file_url = 'https://luminus.nus.edu.sg/v2/api/files/file/' + file_id + '/downloadurl';
-    return await downloadAPI(auth, file_url);
+    const file_path = 'files/file/' + file_id + '/downloadurl';
+    return await downloadAPI(auth, file_path);
 }
 
 async function downloadFolderAPI(auth, folder_id) {
-    const folder_url = 'https://luminus.nus.edu.sg/v2/api/files/' + folder_id + '/downloadurl';
-    return await downloadAPI(auth, folder_url);
+    const folder_path = 'files/' + folder_id + '/downloadurl';
+    return await downloadAPI(auth, folder_path);
 }
 
 module.exports = { queryAPI, downloadFileAPI, downloadFolderAPI };

@@ -1,0 +1,25 @@
+{
+  "name": "luminus-downloader",
+  "version": "1.0.0",
+  "description": "This downloader compares your local directory to LumiNUS, and pulls all new files and folders from LumiNUS into the appropriate location in your local directory.",
+  "main": "main.js",
+  "dependencies": {
+    "puppeteer": "^1.20.0",
+    "request": "^2.88.0",
+    "unzipper": "^0.10.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halfwhole/luminus-downloader.git"
+  },
+  "author": "halfwhole",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/halfwhole/luminus-downloader/issues"
+  },
+  "homepage": "https://github.com/halfwhole/luminus-downloader#readme"
+}
