@@ -12,7 +12,10 @@ function queryAPI(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) return reject(res.statusMessage);
+            if (res.statusCode != 200) {
+                return reject('queryAPI failed. Status code: ' + res.statusCode +
+                              ', status message: ' + res.statusMessage);
+            }
             resolve(JSON.parse(body)['data']);
         })
     });
@@ -144,7 +147,10 @@ function getDownloadURL(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) return reject(res.statusMessage);
+            if (res.statusCode != 200) {
+                return reject('getDownloadURL failed. Status code: ' + res.statusCode +
+                              ', status message: ' + res.statusMessage);
+            }
             resolve(JSON.parse(body)['data']);
         })
     });
@@ -162,7 +168,10 @@ async function downloadAPI(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) return reject(res.statusMessage);
+            if (res.statusCode != 200) {
+                return reject('downloadAPI failed. Status code: ' + res.statusCode +
+                              ', status message: ' + res.statusMessage);
+            }
             resolve(body);
         })
     });
