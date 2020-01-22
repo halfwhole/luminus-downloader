@@ -12,7 +12,7 @@ function queryAPI(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) {
+            if (res.statusCode !== 200) {
                 return reject('queryAPI failed. Status code: ' + res.statusCode +
                               ', status message: ' + res.statusMessage);
             }
@@ -138,6 +138,7 @@ function queryFilesAPI(auth, parent_id) {
     return queryAPI(auth, FILES_PATH);
 }
 
+// Returns a promise containing the download URL of the given path
 function getDownloadURL(auth, path) {
     const options = {
         headers: { 'Authorization': auth },
@@ -147,7 +148,7 @@ function getDownloadURL(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) {
+            if (res.statusCode !== 200) {
                 return reject('getDownloadURL failed. Status code: ' + res.statusCode +
                               ', status message: ' + res.statusMessage);
             }
@@ -168,7 +169,7 @@ async function downloadAPI(auth, path) {
     return new Promise(function(resolve, reject) {
         request(options, (err, res, body) => {
             if (err) return reject(err);
-            if (res.statusCode != 200) {
+            if (res.statusCode !== 200) {
                 return reject('downloadAPI failed. Status code: ' + res.statusCode +
                               ', status message: ' + res.statusMessage);
             }

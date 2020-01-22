@@ -36,9 +36,9 @@ async function exploreModules(auth) {
 
 async function exploreFolders(auth, parent_id) {
     const foldersInfo = await queryFoldersAPI(auth, parent_id);
-    // Filter for folders that aren't submission folders, and are open folders
+    // Filter for folders that aren't submission folders, and are open folders, and allow comments (the ...)
     const filteredFoldersInfo = foldersInfo.filter(folderInfo => {
-        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] != null;
+        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] !== null && folderInfo['allowComments'];
     });
     const folders = filteredFoldersInfo.map(folderInfo => {
         return new Folder(folderInfo['id'], folderInfo['name'].trim());
@@ -57,7 +57,11 @@ async function exploreFolders(auth, parent_id) {
 
 async function exploreFiles(auth, parent_id) {
     const filesInfo = await queryFilesAPI(auth, parent_id);
-    const files = filesInfo.map(fileInfo => {
+    // Filter for files that allow downloading
+    const filteredFilesInfo = filesInfo.filter(fileInfo => {
+        return fileInfo['allowDownload'];
+    });
+    const files = filteredFilesInfo.map(fileInfo => {
         return new File(fileInfo['id'], fileInfo['fileName'], fileInfo['lastUpdatedByName']);
     });
     return files;

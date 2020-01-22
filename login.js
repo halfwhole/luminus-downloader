@@ -15,7 +15,7 @@ async function login() {
     if (PRINT) process.stdout.write('Logging into LumiNUS ... ');
     await page.goto('https://luminus.nus.edu.sg/');
 
-    const username = readUsername()
+    const username = readUsername();
     const password = readPassword();
 
     await page.waitForSelector('.homepage');

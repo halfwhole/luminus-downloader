@@ -45,6 +45,7 @@ async function main() {
 main()
 .then(() => process.exit(0))
 .catch(e => {
+    console.log("Whoops, an error occurred. Here's some details:")
     console.log(e);
     process.exit(1);
 });
