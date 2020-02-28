@@ -4,7 +4,7 @@
   "description": "This downloader compares your local directory to LumiNUS, and pulls all new files and folders from LumiNUS into the appropriate location in your local directory.",
   "main": "main.js",
   "dependencies": {
-    "puppeteer": "^1.20.0",
+    "axios": "^0.19.2",
     "request": "^2.88.0",
     "unzipper": "^0.10.5"
   },
