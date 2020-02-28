@@ -1,23 +1,24 @@
-const request = require('request');
+const axios = require('axios');
 
 const API_BASE = 'https://luminus.nus.edu.sg/v2/api/';
 
 // Returns a promise containing the body of a GET request directed to API_BASE + path
 function queryAPI(auth, path) {
     const options = {
+        method: 'GET',
         headers: { 'Authorization': auth },
-        uri: API_BASE + path,
-        method: 'GET'
-    }
+        url: API_BASE + path
+    };
     return new Promise(function(resolve, reject) {
-        request(options, (err, res, body) => {
-            if (err) return reject(err);
-            if (res.statusCode !== 200) {
-                return reject('queryAPI failed. Status code: ' + res.statusCode +
-                              ', status message: ' + res.statusMessage);
-            }
-            resolve(JSON.parse(body)['data']);
-        })
+        axios(options)
+            .then(res => {
+                if (res.status !== 200) {
+                    return reject('queryAPI failed. Status code: ' + res.status +
+                                  ', status message: ' + res.statusText);
+                }
+                resolve(res.data.data);
+            })
+            .catch(err => reject(err));
     });
 }
 
@@ -141,19 +142,20 @@ function queryFilesAPI(auth, parent_id) {
 // Returns a promise containing the download URL of the given path
 function getDownloadURL(auth, path) {
     const options = {
+        method: 'GET',
         headers: { 'Authorization': auth },
-        uri: API_BASE + path,
-        method: 'GET'
-    }
+        url: API_BASE + path
+    };
     return new Promise(function(resolve, reject) {
-        request(options, (err, res, body) => {
-            if (err) return reject(err);
-            if (res.statusCode !== 200) {
-                return reject('getDownloadURL failed. Status code: ' + res.statusCode +
-                              ', status message: ' + res.statusMessage);
-            }
-            resolve(JSON.parse(body)['data']);
-        })
+        axios(options)
+            .then(res => {
+                if (res.status !== 200) {
+                    return reject('getDownloadURL failed. Status code: ' + res.status +
+                                ', status message: ' + res.statusText);
+                }
+                resolve(res.data.data);
+            })
+            .catch(err => reject(err));
     });
 }
 
@@ -161,20 +163,21 @@ function getDownloadURL(auth, path) {
 async function downloadAPI(auth, path) {
     const downloadURL = await getDownloadURL(auth, path);
     const options = {
-        headers: { 'Authorization': auth },
-        uri: downloadURL,
         method: 'GET',
-        encoding: null // Allows `body` to be a buffer instead of a string by default
-    }
+        headers: { 'Authorization': auth },
+        url: downloadURL,
+        responseType: 'arraybuffer' // Allows data to be a binary data buffer instead of json by default
+    };
     return new Promise(function(resolve, reject) {
-        request(options, (err, res, body) => {
-            if (err) return reject(err);
-            if (res.statusCode !== 200) {
-                return reject('downloadAPI failed. Status code: ' + res.statusCode +
-                              ', status message: ' + res.statusMessage);
-            }
-            resolve(body);
-        })
+        axios(options)
+            .then(res => {
+                if (res.status !== 200) {
+                    return reject('downloadAPI failed. Status code: ' + res.status +
+                                ', status message: ' + res.statusText);
+                }
+                resolve(res.data);
+            })
+            .catch(err => reject(err));
     });
 }
 
