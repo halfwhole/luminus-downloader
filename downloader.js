@@ -49,7 +49,12 @@ async function downloadFile(auth, file_id, file_name, base_path) {
 }
 
 async function downloadFolder(auth, folder_id, folder_name, base_path) {
-    const buffer = await downloadFolderAPI(auth, folder_id);
+    try {
+        const buffer = await downloadFolderAPI(auth, folder_id);
+    } catch (err) {
+        console.log("Folder '" + folder_name + "' could not be downloaded.");
+        return;
+    }
     await writeItem(buffer, folder_name + '.zip', base_path);
     // Unzip folder
     return new Promise((resolve, reject) => {

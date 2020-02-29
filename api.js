@@ -1,4 +1,5 @@
-const axios = require('axios');
+const axios = require('axios').create({ timeout: 5000 });
+// TODO: refactor magic constant
 
 const API_BASE = 'https://luminus.nus.edu.sg/v2/api/';
 
