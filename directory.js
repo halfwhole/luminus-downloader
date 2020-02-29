@@ -10,9 +10,9 @@ class Module {
     }
     // 'diff' is a flag indicating if everything in the module should be printed,
     // or only files and folders that are different
-    print(diff = false) {
-        console.log(this.toString());
-        this.folders.forEach(folder => folder.print(0, diff));
+    printString(diff = false) {
+        return this.toString() + '\n'
+            + this.folders.map(folder => folder.printString(0, diff)).filter(x => x).join('\n');
     }
     // Tells you if anything in the module is diff
     anyDiff() {
@@ -39,10 +39,12 @@ class Folder {
     populateFiles(files) {
         this.files = files;
     }
-    print(level, diff = false) {
-        if (!diff || this.anyDiff()) console.log(this.toString(level));
-        this.folders.forEach(folder => folder.print(level + 1, diff));
-        this.files.forEach(file => file.print(level + 1, diff));
+    printString(level, diff = false) {
+        let result = '';
+        if (!diff || this.anyDiff()) result += this.toString(level) + '\n';
+        result += this.folders.map(folder => folder.printString(level + 1, diff)).filter(x => x).join('\n');
+        result += this.files.map(file => file.printString(level + 1, diff)).filter(x => x).join('\n');
+        return result;
     }
     // Tells you if this folder or any of its children files or folders are recursively diff
     anyDiff() {
@@ -63,8 +65,8 @@ class File {
         this.id = id;
         this.name = name;
     }
-    print(level, diff) {
-        if (!diff || this.diff) console.log(this.toString(level));
+    printString(level, diff) {
+        return (!diff || this.diff) ? this.toString(level) : '';
     }
     toString(level) {
         return '  '.repeat(level) + '* ' + this.name + (this.diff ? ' [new]' : '');

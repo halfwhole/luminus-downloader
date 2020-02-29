@@ -13,17 +13,19 @@ const { downloadNewFoldersFilesInModule } = require('./downloader');
 const DIRECTORY_PATH = path.join(os.homedir(), readDirectoryPath());
 
 function printDiffModules(modules) {
+    let printString = '';
     let nothingNew = true;
     for (const module of modules) {
         const moduleDiff = module.anyDiff();
         if (!moduleDiff) continue;
-        console.log();
+        printString += '\n';
         nothingNew = false;
-        module.print(true);
+        printString += module.printString(true);
     }
     if (nothingNew) {
-        console.log('No new files or folders!');
+        printString += 'No new files or folders!';
     }
+    console.log(printString);
 }
 
 /* MAIN PROCESS */
