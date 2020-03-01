@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const MODULES_FILE = 'MODULES.txt'
+const MODULES_FILE = 'config/MODULES.txt'
 
 // Returns an object mapping LumiNUS module names to local module names
 function readModuleMapping() {

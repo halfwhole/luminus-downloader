@@ -3,7 +3,7 @@ node_modules/
 *.un~
 *.swp
 
-CONFIG.txt
-MODULES.txt
+config/CONFIG.txt
+config/MODULES.txt
 LOG.txt
 TODO.txt

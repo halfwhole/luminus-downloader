@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const CONFIG_FILE = 'CONFIG.txt'
+const CONFIG_FILE = 'config/CONFIG.txt'
 
 function read(property) {
     try {

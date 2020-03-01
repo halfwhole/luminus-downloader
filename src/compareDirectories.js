@@ -54,5 +54,21 @@ function markDiffFolders(folder) {
     folder.folders.forEach(folder => markDiffFolders(folder));
 }
 
-module.exports = { compareModules };
+// Gets the print string for modules (for display)
+function modulesPrintString(modules) {
+    let printString = '';
+    let nothingNew = true;
+    for (const module of modules) {
+        const moduleDiff = module.anyDiff();
+        if (!moduleDiff) continue;
+        printString += '\n';
+        nothingNew = false;
+        printString += module.printString(true);
+    }
+    if (nothingNew) {
+        printString += 'No new files or folders!';
+    }
+    return printString;
+}
 
+module.exports = { compareModules, modulesPrintString };
