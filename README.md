@@ -15,8 +15,7 @@ In the `config` directory, copy the file `CONFIG_EXAMPLE.txt` into a new file `C
 Replace the following fields accordingly:
 * `username` NUSNET username
 * `password` NUSNET password
-* `directory_path` Path of your local directory to compare to LumiNUS, *relative to your home directory*
-* `print` Whether you want to display extra information or not -- either `true` or `false`
+* `directory_path` Path of your local directory for LumiNUS files, *relative to your home directory*
 
 #### `MODULES.txt`
 
@@ -29,6 +28,9 @@ This helps to map the LumiNUS module to your local folder.
 ## Running the script
 
 Run `npm install`, then run the main script using `node main.js`.
+
+Options:
+- `--silent` or `-s`: No printing (apart from errors)
 
 ![Example of running the script](./example.gif)
 

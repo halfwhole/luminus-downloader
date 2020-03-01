@@ -5,7 +5,8 @@
   "main": "main.js",
   "dependencies": {
     "axios": "^0.19.2",
-    "unzipper": "^0.10.5"
+    "unzipper": "^0.10.5",
+    "yargs": "^15.2.0"
   },
   "devDependencies": {},
   "scripts": {

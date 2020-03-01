@@ -1,6 +1,5 @@
 const { Module, Folder, File } = require('./directory');
-const { readModuleMapping } = require('./moduleParser');
-const { readPrint } = require('./configParser');
+const { readPrint, readModuleMapping } = require('./config');
 const { queryModulesAPI, queryFoldersAPI, queryFilesAPI } = require('./api');
 
 const PRINT = readPrint();

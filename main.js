@@ -7,10 +7,11 @@ const { login } = require('./src/login');
 const { exploreModules } = require('./src/exploreLuminusDirectory');
 const { exploreLocalModules } = require('./src/exploreLocalDirectory');
 const { compareModules, modulesPrintString } = require('./src/compareDirectories');
-const { readDirectoryPath } = require('./src/configParser');
+const { readPrint, readDirectoryPath } = require('./src/config');
 const { downloadNewFoldersFilesInModule } = require('./src/downloader');
 
 const DIRECTORY_PATH = path.join(os.homedir(), readDirectoryPath());
+const PRINT = readPrint();
 
 /* MAIN PROCESS */
 
@@ -26,7 +27,7 @@ async function main() {
     await Promise.all(promises);
 
     const modulesString = modulesPrintString(modules);
-    console.log(modulesString);
+    if (PRINT) console.log(modulesString);
 }
 
 main()

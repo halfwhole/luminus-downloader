@@ -1,4 +1,4 @@
-const { readPrint } = require('./configParser');
+const { readPrint } = require('./config');
 
 const PRINT = readPrint();
 

@@ -5,7 +5,7 @@ const axios = require('axios').create({
     validateStatus: (status) => status < 500, // also allow 302 redirects, not only 2xx
 });
 
-const { readUsername, readPassword, readPrint } = require('./configParser');
+const { readUsername, readPassword, readPrint } = require('./config');
 
 const PRINT = readPrint();
 
