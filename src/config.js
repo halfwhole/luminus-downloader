@@ -1,16 +1,22 @@
 const fs = require('fs');
 const yargs = require('yargs');
 
-const argv = yargs.
-      option('silent', {
+const CONFIG_FILE  = 'config/CONFIG.txt';
+const MODULES_FILE = 'config/MODULES.txt';
+const TIMEOUT = 5000;
+
+const argv = yargs
+      .option('silent', {
           alias: 's',
           description: 'Runs the script silently',
           type: 'boolean'
       })
+      .option('timeout', {
+          alias: 't',
+          description: 'Timeout for each request in ms, defaults to ' + TIMEOUT,
+          type: 'integer'
+      })
       .argv;
-
-const CONFIG_FILE  = 'config/CONFIG.txt';
-const MODULES_FILE = 'config/MODULES.txt';
 
 function read(property) {
     try {
@@ -35,6 +41,10 @@ function readPassword() {
 
 function readPrint() {
     return !argv.silent;
+}
+
+function readTimeout() {
+    return argv.timeout ? argv.timeout : TIMEOUT;
 }
 
 function readDirectoryPath() {
@@ -65,6 +75,7 @@ module.exports = {
     readUsername,
     readPassword,
     readPrint,
+    readTimeout,
     readDirectoryPath,
     readModuleMapping
 };

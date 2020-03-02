@@ -31,6 +31,7 @@ Run `npm install`, then run the main script using `node main.js`.
 
 Options:
 - `--silent` or `-s`: No printing (apart from errors)
+- `--timeout` or `-t`: Timeout per request in ms, defaults to 5000
 
 ![Example of running the script](./example.gif)
 

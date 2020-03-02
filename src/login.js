@@ -1,13 +1,15 @@
+const { readUsername, readPassword, readPrint, readTimeout } = require('./config');
+
+const PRINT = readPrint();
+const TIMEOUT = readTimeout();
+
 const url = require('url');
 const qs = require('querystring');
 const axios = require('axios').create({
+    timeout: TIMEOUT,
     maxRedirects: 0,                          // intercept 302 redirects
     validateStatus: (status) => status < 500, // also allow 302 redirects, not only 2xx
 });
-
-const { readUsername, readPassword, readPrint } = require('./config');
-
-const PRINT = readPrint();
 
 const VAFS_URL = 'https://vafs.nus.edu.sg/adfs/oauth2/authorize?' +
                  'response_type=code&' +

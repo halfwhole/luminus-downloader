@@ -1,7 +1,9 @@
-const axios = require('axios').create({ timeout: 5000 });
-// TODO: refactor magic constant
+const { readTimeout } = require('./config');
 
+const TIMEOUT = readTimeout();
 const API_BASE = 'https://luminus.nus.edu.sg/v2/api/';
+
+const axios = require('axios').create({ timeout: TIMEOUT });
 
 // Returns a promise containing the body of a GET request directed to API_BASE + path
 function queryAPI(auth, path) {
