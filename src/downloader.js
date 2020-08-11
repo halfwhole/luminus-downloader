@@ -43,8 +43,9 @@ async function downloadNewFiles(auth, files, path) {
 /* HELPER FUNCTIONS FOR DOWNLOADING AND WRITING FILES/FOLDERS */
 
 async function downloadFile(auth, file_id, file_name, base_path) {
+    let buffer;
     try {
-        const buffer = await downloadFileAPI(auth, file_id);
+        buffer = await downloadFileAPI(auth, file_id);
     } catch (err) {
         if (PRINT) console.log("File '" + file_name +"' could not be downloaded.");
         return;
@@ -54,8 +55,9 @@ async function downloadFile(auth, file_id, file_name, base_path) {
 }
 
 async function downloadFolder(auth, folder_id, folder_name, base_path) {
+    let buffer;
     try {
-        const buffer = await downloadFolderAPI(auth, folder_id);
+        buffer = await downloadFolderAPI(auth, folder_id);
     } catch (err) {
         if (PRINT) console.log("Folder '" + folder_name + "' could not be downloaded.");
         return;
