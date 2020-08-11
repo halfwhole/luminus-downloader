@@ -37,7 +37,8 @@ async function exploreFolders(auth, parent_id) {
     const foldersInfo = await queryFoldersAPI(auth, parent_id);
     // Filter for folders that aren't submission folders, and are open folders
     const filteredFoldersInfo = foldersInfo.filter(folderInfo => {
-        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] !== null;
+        return !folderInfo['allowUpload'] && folderInfo['totalFileCount'] !== null 
+            && folderInfo['totalSize'] !== 0;
     });
     const folders = filteredFoldersInfo.map(folderInfo => {
         return new Folder(folderInfo['id'], folderInfo['name'].trim());
