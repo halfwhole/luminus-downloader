@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const unzip = require('unzipper');
 const path = require('path');
 const fs = require('fs');
+const Seven = require('node-7z');
 
 const { readPrint } = require('./config');
 const { downloadFileAPI, downloadFolderAPI } = require('./api');
@@ -50,7 +51,8 @@ async function downloadFile(auth, file_id, file_name, base_path) {
         if (PRINT) console.log("File '" + file_name +"' could not be downloaded.");
         return;
     }
-    await writeItem(buffer, file_name, base_path);
+    const file_path = path.join(base_path, file_name);
+    await writeFile(buffer, file_path);
     if (PRINT) console.log('Downloaded file ' + file_name + ' to ' + base_path);
 }
 
@@ -62,38 +64,70 @@ async function downloadFolder(auth, folder_id, folder_name, base_path) {
         if (PRINT) console.log("Folder '" + folder_name + "' could not be downloaded.");
         return;
     }
-    await writeItem(buffer, folder_name + '.zip', base_path);
-    // Unzip folder
-    return new Promise((resolve, reject) => {
-        const zip_folder_path = path.join(base_path, folder_name + '.zip');
-        const temp_folder_name = crypto.createHash('sha1').update(Math.random().toString()).digest('hex');
-        const temp_folder_path = path.join(base_path, temp_folder_name);
-        const unzipExtractor = unzip.Extract({ path: temp_folder_path });
-        fs.createReadStream(zip_folder_path).pipe(unzipExtractor);
-        // TODO: how dirty, callback hell
-        unzipExtractor.on('close', () => {
-            fs.rename(path.join(temp_folder_path, folder_name), path.join(base_path, folder_name), err => {
-                if (err) reject(err);
-                fs.rmdir(temp_folder_path, err => {
-                    if (err) reject(err);
-                    fs.unlink(zip_folder_path, err => {
-                        if (err) reject(err);
-                        if (PRINT) console.log('Downloaded folder ' + folder_name + ' to ' + base_path);
-                        resolve();
-                    });
-                });
-            });
+    const zip_file_path = path.join(base_path, folder_name + '.zip');
+    await writeFile(buffer, zip_file_path);
+    await fixBackSlashedZipFile(zip_file_path);
+    await extractZipFile(zip_file_path, base_path);
+    await deleteFile(zip_file_path);
+    if (PRINT) console.log('Downloaded folder ' + folder_name + ' to ' + base_path);
+}
+
+/* HELPER FUNCTIONS FOR FILES */
+
+async function writeFile(buffer, file_path) {
+    return new Promise((res, rej) => {
+        fs.writeFile(file_path, buffer, (err) => {
+            if (err) rej(err);
+            res();
         });
     });
 }
 
-async function writeItem(buffer, name, base_path) {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(path.join(base_path, name), buffer, (err) => {
-            if (err) reject(err);
-            resolve();
+function deleteFile(file_path) {
+    return new Promise((res, rej) => {
+        fs.unlink(file_path, err => {
+            if (err) rej(err);
+            res();
         });
     });
 }
+
+/* HELPER FUNCTIONS FOR 7ZIP */
+
+// Converts backslashes to forward slashes in .zip files, to make it work with Unix systems
+// This function is necessary because downloaded LumiNUS .zip folders contain backslashes in their file names...
+async function fixBackSlashedZipFile(zip_file_path) {
+    function getZipFilenames(zip_file_path) {
+        const myStream = Seven.list(zip_file_path);
+        return new Promise((res, rej) => {
+            let filenames = [];
+            myStream.on('data', (chunk) => {
+                filenames.push(chunk['file']);
+            });
+            myStream.on('end', () => {
+                res(filenames);
+            });
+        });
+    }
+
+    function renameZipFilenames(zip_file_path, renamings) {
+        return new Promise((res, rej) => {
+            const myStream = Seven.rename(zip_file_path, renamings);
+            myStream.on('end', () => res());
+        });
+    }
+
+    const forwardSlashedFilenames = await getZipFilenames(zip_file_path);
+    const backForwardSlashedFilenames = forwardSlashedFilenames.map(fname => [fname.replace(/\//g, '\\'), fname]);
+    await renameZipFilenames(zip_file_path, backForwardSlashedFilenames);
+}
+
+function extractZipFile(zip_file_path, dest_path) {
+    return new Promise((res, rej) => {
+        const myStream = Seven.extractFull(zip_file_path, dest_path, { recursive: true });
+        myStream.on('end', () => res());
+    });
+}
+
 
 module.exports = { downloadNewFoldersFilesInModule };
