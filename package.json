@@ -7,7 +7,7 @@
     "axios": "^0.19.2",
     "node-7z": "^2.1.1",
     "unzipper": "^0.10.5",
-    "yargs": "^15.2.0"
+    "yargs": "^15.4.1"
   },
   "devDependencies": {},
   "scripts": {
