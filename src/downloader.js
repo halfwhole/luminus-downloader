@@ -94,8 +94,10 @@ function deleteFile(file_path) {
 
 /* HELPER FUNCTIONS FOR 7ZIP */
 
+// EDIT: As of 19/08/20, this function is no longer necessary as a fix has been applied by LumiNUS. Comments below are outdated.
+//       I'll still keep the function here though as a safeguard.
 // Converts backslashes to forward slashes in .zip files, to make it work with Unix systems
-// This function is necessary because downloaded LumiNUS .zip folders contain backslashes in their file names...
+// This function is necessary because downloaded LumiNUS .zip folders contain backslashes in their file names
 async function fixBackSlashedZipFile(zip_file_path) {
     function getZipFilenames(zip_file_path) {
         const myStream = Seven.list(zip_file_path);
