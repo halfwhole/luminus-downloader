@@ -35,3 +35,6 @@ Options:
 
 ![Example of running the script](./example.gif)
 
+## Contributions
+
+Contributions are welcome! If you have any issues or suggestions, feel free raise them in the [issue tracker](https://github.com/halfwhole/luminus-downloader/issues), or open a pull request directly.
