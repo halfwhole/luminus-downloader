@@ -27,6 +27,8 @@ This helps to map the LumiNUS module to your local folder.
 
 ## Running the script
 
+Ensure that you have 7-Zip available, through `sudo apt install p7zip-full` or `brew install p7zip`.
+
 Run `npm install`, then run the main script using `node main.js`.
 
 Options:
