@@ -1,4 +1,5 @@
 const { readUsername, readPassword, readPrint, readTimeout } = require('./config');
+const prompt = require('prompt-sync')();
 
 const PRINT = readPrint();
 const TIMEOUT = readTimeout();
@@ -47,13 +48,29 @@ function finishAxiosRequest(res) {
     return [res, newCookies, location];
 }
 
+function getUsername() {
+    try {
+	return readUsername();
+    } catch (e) {
+	return prompt('Username: ');
+    }
+}
+
+function getPassword() {
+    try {
+	return readPassword();
+    } catch (e) {
+	return prompt.hide('Password: ');
+    }
+}
+
 // Logs in the user, throwing an error if the login fails
 // Returns: a promise with the access token
 async function login() {
-    if (PRINT) process.stdout.write('Logging into LumiNUS ... ');
-    const username = readUsername();
-    const password = readPassword();
+    const username = getUsername();
+    const password = getPassword();
     const login_params = { ...VAFS_PARAMS, UserName: username, Password: password };
+    if (PRINT) process.stdout.write('Logging into LumiNUS ... ');
 
     let res, cookies, location;
     [res, cookies, location] = await makeAxiosPost(VAFS_URL, login_params);   // 302
