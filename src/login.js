@@ -1,6 +1,10 @@
 const { readUsername, readPassword, readPrint, readTimeout } = require('./config');
 const prompt = require('prompt-sync')();
 
+require('ssl-root-cas')
+    .inject()
+    .addFile(process.cwd() + '/nus-edu-sg-chain.pem');
+
 const PRINT = readPrint();
 const TIMEOUT = readTimeout();
 
@@ -34,8 +38,8 @@ async function makeAxiosGet(url, cookies='') {
     return finishAxiosRequest(res);
 }
 
-async function makeAxiosPost(url, params, cookies='') {
-    const res = await axios.post(url, qs.stringify(params), { headers: { Cookie: cookies } });
+async function makeAxiosPost(url, params) {
+    const res = await axios.post(url, qs.stringify(params));
     return finishAxiosRequest(res);
 }
 
