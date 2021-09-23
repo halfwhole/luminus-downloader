@@ -1,3 +1,0 @@
-username = nusstu\e0123456
-password = <password>
-directory_path = Documents/AY2S1/
