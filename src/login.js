@@ -5,13 +5,10 @@ require('ssl-root-cas')
     .inject()
     .addFile(process.cwd() + '/nus-edu-sg-chain.pem');
 
-const PRINT = readPrint();
-const TIMEOUT = readTimeout();
-
 const url = require('url');
 const qs = require('querystring');
 const axios = require('axios').create({
-    timeout: TIMEOUT,
+    timeout: readTimeout(),
     maxRedirects: 0,                          // intercept 302 redirects
     validateStatus: (status) => status < 500, // also allow 302 redirects, not only 2xx
 });
@@ -74,7 +71,7 @@ async function login() {
     const username = getUsername();
     const password = getPassword();
     const login_params = { ...VAFS_PARAMS, UserName: username, Password: password };
-    if (PRINT) process.stdout.write('Logging into LumiNUS ... ');
+    if (readPrint()) process.stdout.write('Logging into LumiNUS ... ');
 
     let res, cookies, location;
     [res, cookies, location] = await makeAxiosPost(VAFS_URL, login_params);   // 302
@@ -90,8 +87,8 @@ async function login() {
 
     const access_token = res.data.access_token;
     if (access_token === undefined) throw 'Login failed, please try again. LumiNUS sucks sometimes.';
-    if (PRINT) console.log('done!');
+    if (readPrint()) console.log('done!');
     return 'Bearer ' + access_token;
 }
 
-module.exports = { login };
+module.exports = { login, getUsername };
