@@ -91,4 +91,4 @@ async function login() {
     return 'Bearer ' + access_token;
 }
 
-module.exports = { login, getUsername };
+module.exports = { login };
