@@ -8,7 +8,12 @@ const DUMMY_ID = '';
 // Entry point for exploring the local directory
 // Returns: an array of Modules in the folder path
 function exploreLocalModules(folderPath) {
-    const dirents = fs.readdirSync(folderPath, { withFileTypes: true })
+    let dirents;
+    try {
+        dirents = fs.readdirSync(folderPath, { withFileTypes: true });
+    } catch (err) {
+        throw `Local directory path '${folderPath}' is invalid. To reset your path, use option -r or edit the file config/CONFIG.yaml.`;
+    }
     const moduleCodes = dirents
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
