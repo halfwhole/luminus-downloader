@@ -4,7 +4,7 @@
   "description": "This downloader compares your local directory to LumiNUS, and pulls all new files and folders from LumiNUS into the appropriate location in your local directory.",
   "main": "main.js",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "js-yaml": "4.1.0",
     "node-7z": "^2.1.1",
     "prompt-sync": "^4.2.0",
