@@ -10,19 +10,19 @@ const { compareModules, modulesPrintString } = require('./src/compareDirectories
 const { readPrint, readDirectoryPath } = require('./src/config');
 const { downloadNewFoldersFilesInModule } = require('./src/downloader');
 
-const DIRECTORY_PATH = path.join(os.homedir(), readDirectoryPath());
 const PRINT = readPrint();
 
 /* MAIN PROCESS */
 
 async function main() {
+    const directoryPath = path.join(os.homedir(), readDirectoryPath());
     const auth = await login();
     const modules = await exploreModules(auth);
-    const localModules = exploreLocalModules(DIRECTORY_PATH);
+    const localModules = exploreLocalModules(directoryPath);
     compareModules(modules, localModules);
 
     const promises = modules.map(module => {
-        return downloadNewFoldersFilesInModule(auth, module, DIRECTORY_PATH);
+        return downloadNewFoldersFilesInModule(auth, module, directoryPath);
     });
     await Promise.all(promises);
 

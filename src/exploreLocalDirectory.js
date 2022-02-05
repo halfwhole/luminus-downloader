@@ -12,7 +12,7 @@ function exploreLocalModules(folderPath) {
     try {
         dirents = fs.readdirSync(folderPath, { withFileTypes: true });
     } catch (err) {
-        throw `Local directory path '${folderPath}' is invalid. To reset your path, use option -r or edit the file config/CONFIG.yaml.`;
+        throw `Local directory path '${folderPath}' is invalid, please check your module configurations file.`;
     }
     const moduleCodes = dirents
         .filter(dirent => dirent.isDirectory())

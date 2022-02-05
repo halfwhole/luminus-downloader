@@ -1,9 +1,10 @@
+.DS_Store
 node_modules/
 *.un
 *.un~
 *.swp
 
-config/CONFIG.txt
-config/MODULES.txt
+config/credentials.yaml
+config/modules.yaml
 LOG.txt
 TODO.txt

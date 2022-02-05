@@ -1,13 +1,14 @@
 const fs = require('fs');
 const yargs = require('yargs');
-const prompt = require('prompt-sync')();
+const prompt = require('prompt-sync')({
+    sigint: true,
+});
 const yaml = require('js-yaml');
-const homedir = require('os').homedir;
 
-const CONFIG_FILE = 'config/CONFIG.yaml';
-const MODULES_FILE = 'config/MODULES.txt';
+const CONFIG_FILE = 'config/credentials.yaml';
+const MODULES_FILE = 'config/modules.yaml';
 const TIMEOUT = 5000;
-const CONFIG_FIELDS = ['username', 'password', 'directory_path'];
+const CONFIG_FIELDS = ['username', 'password'];
 
 const argv = yargs
     .option('silent', {
@@ -22,29 +23,38 @@ const argv = yargs
     })
     .option('no-save', {
         alias: 'n',
-        description: 'Do not save the user configuration',
+        description: 'Do not save the user login credentials',
         type: 'boolean'
     })
-    .option('reset-configuration', {
+    .option('reset-credentials', {
         alias: 'r',
-        description: 'Re-enter NUSNET credentials and directory path',
+        description: 'Re-enter NUSNET login credentials',
         type: 'boolean'
     })
     .argv;
 
 const config = (() => {
     const data = getFileData();
-    for (const [property, value] of Object.entries(data)) {
-        if (!value) {
-            if (property === 'directory_path') data[property] = prompt(property.toUpperCase() + ': ' + homedir);
-            else if (property === 'password') data[property] = prompt.hide(property.toUpperCase() + ': ');
-            else data[property] = prompt(property.toUpperCase() + ': ');
+    let isUserPrompted = false;
+    for (const property of CONFIG_FIELDS) {
+        const value = data[property];
+        if (value && !argv['reset-credentials']) continue;
+        isUserPrompted = true;
+        if (property === 'username') {
+            data[property] = prompt('Username (e.g. nusstu\\e0123456): ');
+        } else if (property === 'password') {
+            data[property] = prompt.hide(`Password: `);
+        } else {
+            // This should not happen, but acts as a failsafe
+            data[property] = prompt(property.toUpperCase() + ': ');
         }
     }
-    if (argv['no-save']) fs.unlink(CONFIG_FILE, (err) => console.log('Configuration was not saved to disk, you will have to re-enter your details again the next time'));
-    else fs.writeFileSync(CONFIG_FILE, yaml.dump(data), {encoding: 'utf8'});
+    if (!argv['no-save'] && isUserPrompted) {
+        fs.writeFileSync(CONFIG_FILE, yaml.dump(data), {encoding: 'utf8'});
+        console.log(`Your credentials have been saved to ${CONFIG_FILE}.`);
+    }
     return data;
-})()
+})();
 
 function createEmptyData() {
     const data = {};
@@ -53,13 +63,10 @@ function createEmptyData() {
 }
 
 function getFileData() {
-    if (argv['reset-configuration']) return createEmptyData();
     try {
         fs.accessSync(CONFIG_FILE);
         return yaml.load(fs.readFileSync(CONFIG_FILE, {encoding: 'utf8'}));
-    }
-    catch (err) {
-        console.log('No existing configuration detected, creating new configuration')
+    } catch (err) {
         return createEmptyData();
     }
 }
@@ -81,27 +88,32 @@ function readTimeout() {
 }
 
 function readDirectoryPath() {
-    return config.directory_path;
+    try {
+        const data = yaml.load(fs.readFileSync(MODULES_FILE, {encoding: 'utf8'}));
+        const dirName = Object.keys(data)[0];
+        return dirName;
+    } catch (e) {
+        throw 'Invalid file format for ' + MODULES_FILE + ', please ensure that its format is correct.';
+    }
 }
 
 // Returns an object mapping LumiNUS module names to local module names
 function readModuleMapping() {
     try {
-        const data = fs.readFileSync(MODULES_FILE, {encoding: 'utf8'}).toString();
-        const lines = data.split('\n');
-        let mapping = {};
-        for (const line of lines) {
-            if (line.trim() === '') continue;
-            const splitLine = line.split(':');
-            const luminusModuleName = splitLine[0].trim();
-            mapping[luminusModuleName] = splitLine[1] ? splitLine[1].trim() : null;
+        const data = yaml.load(fs.readFileSync(MODULES_FILE, {encoding: 'utf8'}));
+        const dirName = Object.keys(data)[0];
+        const modules = data[dirName];
+        const mapping = {};
+        for (const module of modules) {
+            const moduleName = Object.keys(module)[0];
+            const luminusModuleName = module[moduleName];
+            mapping[luminusModuleName] = moduleName;
         }
         return mapping;
     } catch (e) {
-        throw 'Could not read module mappings from ' + MODULES_FILE + ', terminating.';
+        throw 'Invalid file format for ' + MODULES_FILE + ', please ensure that its format is correct.';
     }
 }
-
 
 module.exports = {
     readUsername,

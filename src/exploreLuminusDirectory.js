@@ -3,19 +3,19 @@ const { readPrint, readModuleMapping } = require('./config');
 const { queryModulesAPI, queryFoldersAPI, queryFilesAPI } = require('./api');
 
 const PRINT = readPrint();
-const MAPPING = readModuleMapping();
 
 // Entry point for exploring all modules
 // Returns: an array of Modules
 async function exploreModules(auth) {
+    const mapping = readModuleMapping();
     const modulesInfo = await queryModulesAPI(auth);
     // Filter out modules that haven't been mapped in MODULES.txt
     const filteredModulesInfo = modulesInfo.filter(moduleInfo => {
-        return Object.keys(MAPPING).includes(moduleInfo['name']);
+        return Object.keys(mapping).includes(moduleInfo['name']);
     });
     // Map module codes according to user-defined module mappings
     const modules = filteredModulesInfo.map(moduleInfo => {
-        return new Module(moduleInfo['id'], MAPPING[moduleInfo['name']], moduleInfo['courseName']);
+        return new Module(moduleInfo['id'], mapping[moduleInfo['name']], moduleInfo['courseName']);
     });
 
     // Recursively explore its children for folders

@@ -76,7 +76,7 @@ async function login() {
     let res, cookies, location;
     [res, cookies, location] = await makeAxiosPost(VAFS_URL, login_params);   // 302
     if (res.status !== 302) {
-        throw 'Login credentials invalid. To reset your credentials, use option -r or edit the file config/CONFIG.yaml.';
+        throw 'Login credentials invalid. To reset your credentials, use option -r or edit the user credentials file.';
     }
     [res, cookies, location] = await makeAxiosGet(location, cookies=cookies); // 302
     [res, _______, ________] = await makeAxiosGet(location, cookies=cookies); // 200
