@@ -19,7 +19,7 @@ In the `config` directory, copy `modules_example.yaml` into a new file `modules.
 - The top line should be the path of your desired local directory, *relative to your home directory*.
   This is where all your LumiNUS modules will be stored.
 - Each of the following lines should map one LumiNUS module to its corresponding sub-folder in your local directory.
-  A line should have the format `<LumiNUS module name>: <Local sub-folder name>`.
+  A line should have the format `<Local sub-folder name>: <LumiNUS module name>`.
 
 ## Running the script
 
