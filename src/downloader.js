@@ -64,6 +64,7 @@ async function downloadFolder(auth, folder_id, folder_name, base_path) {
         if (PRINT) console.log("Folder '" + folder_name + "' could not be downloaded.");
         return;
     }
+    folder_name = folder_name.replace(/\//g, ':');  // Replace forward slashes that can mess up the zip file path
     const zip_file_path = path.join(base_path, folder_name + '.zip');
     await writeFile(buffer, zip_file_path);
     await fixBackSlashedZipFile(zip_file_path);
