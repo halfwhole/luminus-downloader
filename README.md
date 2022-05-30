@@ -3,6 +3,20 @@
 This downloader compares your local directory to LumiNUS, and pulls all new
 files and folders from LumiNUS into the appropriate location in your local directory.
 
+### 🌅 Sunsetting LumiNUS Downloader
+
+*This project will no longer be supported as of June 2022.*
+I'll be leaving NUS soon, and so will lose my access to LumiNUS and my ability to test its features.
+More importantly, NUS will be [migrating to Canvas](https://nus.edu.sg/canvas/) in AY2022/23,
+leaving both LumiNUS and this downloader largely obsolete.
+
+Nevertheless, feel free to continue using this project if it remains useful to you.
+If there are any new issues, I'll try to see if I can fix them; otherwise, feel free to fork this repository to make any necessary changes. 
+
+I'm glad to know that others have found this downloader useful,
+and am grateful to everyone who's contributed to this project.
+Good luck, and best wishes to everyone in NUS!
+
 ## Setting up
 
 ### User credentials (optional)
